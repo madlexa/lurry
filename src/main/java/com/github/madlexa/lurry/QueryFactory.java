@@ -6,6 +6,7 @@ import com.github.madlexa.lurry.parser.Parser;
 import com.github.madlexa.lurry.reader.Reader;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,6 +27,7 @@ public class QueryFactory {
     private void init() {
         synchronized (this) {
             if (cache == null) {
+                cache = new HashMap<>();
                 for (InputStream source : reader) {
                     for (Entity entity : parser.parse(source)) {
                         for (Query query : entity.getQueries()) {
@@ -41,7 +43,11 @@ public class QueryFactory {
         if (cache == null) {
             init();
         }
-        return processor.exec(cache.get(getCacheKey(entity, query)), params);
+        Query data = cache.get(getCacheKey(entity, query));
+        if (data == null) {
+            return "";
+        }
+        return processor.exec(data, params);
     }
 
     private String getCacheKey(String entity, String query) {

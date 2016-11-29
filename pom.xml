@@ -1,18 +1,30 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.madlexa</groupId>
     <artifactId>lurry</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-
     <packaging>jar</packaging>
 
     <name>lurry</name>
     <description>GQuery Processor</description>
+    <url>https://github.com/madlexa/lurry</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <properties>
+        <!--SYSTEM-->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.package>com.github.madlexa.lurry</project.package>
+        <project.package.path>com/github/madlexa/lurry</project.package.path>
+
         <!--LOGIC-->
         <groovy.version>2.4.7</groovy.version>
 
@@ -28,7 +40,6 @@
         <junit.version>4.12</junit.version>
         <mockito.version>2.0.2-beta</mockito.version>
     </properties>
-
 
     <dependencies>
         <!--LOGIC-->
@@ -76,8 +87,14 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
+
+    <developers>
+        <developer>
+            <name>Aleksey Dobrynin</name>
+            <email>dobrynin.nsk@gmail.com</email>
+        </developer>
+    </developers>
 
     <build>
         <plugins>
@@ -97,7 +114,32 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.6.201602180812</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>4.0.0</version>
+            </plugin>
+
         </plugins>
     </build>
+
+    <scm>
+        <connection>scm:git:https://github.com/madlexa/lurry.git</connection>
+        <developerConnection>scm:git:https://github.com/madlexa/lurry.git</developerConnection>
+        <url>https://github.com/madlexa/lurry.git</url>
+    </scm>
 
 </project>
