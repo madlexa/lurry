@@ -39,6 +39,7 @@
         <!--TEST-->
         <junit.version>4.12</junit.version>
         <mockito.version>2.0.2-beta</mockito.version>
+        <spock.version>1.1-groovy-2.4-rc-3</spock.version>
     </properties>
 
     <dependencies>
@@ -87,6 +88,14 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <version>${spock.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <developers>
@@ -99,6 +108,18 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.3.1</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.groovy</include>
+                        <include>**/*Spec.groovy</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
