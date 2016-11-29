@@ -4,7 +4,7 @@ import com.github.madlexa.lurry.model.Query
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class QueryProcessorSpec extends Specification {
+class QueryProcessorTest extends Specification {
 
     @Unroll
     def "template(#sql, #params) == #result"() {
