@@ -1,3 +1,18 @@
+/*
+ * Copyright 2016 Aleksey Dobrynin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package one.trifle.lurry.parser;
 
 import com.google.gson.Gson;
@@ -13,13 +28,38 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * TODO
+ * implementation {@code Parser} is used to convert json to lurry format
+ * <p>
+ * json example:
+ * <pre>
+ * [{
+ *     "name": "com.mysite.Person",
+ *     "queries": [
+ *         {
+ *             "name": "get",
+ *             "sql": "SELECT * FROM persons WHERE ${id ? 'ID = ' + id : ''} ${login ? 'login = ' + login : ''}"
+ *         },{
+ *             "name": "delete",
+ *             "sql": "DELETE FROM persons WHERE ${id ? 'ID = ' + id : ''} ${login ? 'login = ' + login : ''}"
+ *         }
+ *     ]
+ * },{
+ *     "name": "com.mysite.Company",
+ *     "queries": [
+ *         {
+ *             "name": "get",
+ *             "sql": "SELECT * FROM companies WHERE ID = $id"
+ *         },{
+ *             "name": "delete",
+ *             "sql": "DELETE FROM companies WHERE ID = $id"
+ *         }
+ *     ]
+ * }]
+ * </pre>
+ *
+ * @author Aleksey Dobrynin
  */
 public class JsonParser implements Parser {
-
-    public JsonParser() {
-    }
-
 
     @Override
     public List<Entity> parse(InputStream source) {

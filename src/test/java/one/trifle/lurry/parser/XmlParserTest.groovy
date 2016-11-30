@@ -1,5 +1,6 @@
 package one.trifle.lurry.parser
 
+import groovy.transform.CompileStatic
 import one.trifle.lurry.exception.LurryParseFormatException
 import one.trifle.lurry.model.Entity
 import one.trifle.lurry.model.Query
@@ -10,6 +11,7 @@ import static org.mockito.Matchers.any
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
 
+@CompileStatic
 class XmlParserTest {
     @Test
     void oneEntityOneQuery() {
