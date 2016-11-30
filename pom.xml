@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.madlexa</groupId>
+    <groupId>one.trifle</groupId>
     <artifactId>lurry</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -22,8 +22,8 @@
     <properties>
         <!--SYSTEM-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.package>com.github.madlexa.lurry</project.package>
-        <project.package.path>com/github/madlexa/lurry</project.package.path>
+        <project.package>one.trifle.lurry</project.package>
+        <project.package.path>one/trifle/lurry</project.package.path>
 
         <!--LOGIC-->
         <groovy.version>2.4.7</groovy.version>
