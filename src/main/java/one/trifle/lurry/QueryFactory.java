@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * implementation {@code Reader} is used to read from samba
+ * TODO
  *
  * @author Aleksey Dobrynin
  */

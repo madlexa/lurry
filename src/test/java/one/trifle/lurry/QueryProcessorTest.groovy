@@ -17,10 +17,11 @@ class QueryProcessorTest extends Specification {
         'bla $test bla'                                 | [test: 1, t1: 0]                || "bla 1 bla"
         'bla ${test == "1" ? res[0] : res[1]} bla'      | [test: "1", res: ["yes", "no"]] || "bla yes bla"
         'bla ${test == 1 ? "yes" : "no"} bla'           | [test: 2]                       || "bla no bla"
-        'bla ${t1} ${t2} bla'                           | [t1: 1, t2: 2]                  || "bla 1 2 bla"
-        'bla <% out << t1 %> ${t2} bla'                 | [t1: 1, t2: 2]                  || "bla 1 2 bla"
-        'ID IN (<% out << (ids.join(",")) %>)'          | [ids: [1, 2, 3]]                || "ID IN (1,2,3)"
-        'ID IN (${ids.collect{"\'$it\'"}.join(\',\')})' | [ids: ["1", "2", "3"]]          || "ID IN ('1','2','3')"
-        'a = \'$a\' AND b = \'$b\''                     | [a: "a"]                        || "a = 'a' AND b = 'null'"
+        'bla ${t1} ${t2} bla'                           | [t1: 1, t2: 2]         || "bla 1 2 bla"
+        'bla <% out << t1 %> ${t2} bla'                 | [t1: 1, t2: 2]         || "bla 1 2 bla"
+        'ID IN (<% out << (ids.join(",")) %>)'          | [ids: [1, 2, 3]]       || "ID IN (1,2,3)"
+        'ID IN (${ids.collect{"\'$it\'"}.join(\',\')})' | [ids: ["1", "2", "3"]] || "ID IN ('1','2','3')"
+        'a = \'$a\' AND b = \'$b\''                     | [a: "a"]               || "a = 'a' AND b = 'null'"
+        'a = \'$a\' AND b = \'$b\''                     | [a: "'a'"]             || "a = '''a''' AND b = 'null'"
     }
 }

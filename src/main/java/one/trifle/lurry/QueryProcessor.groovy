@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * TODO
+ *
+ * @author Aleksey Dobrynin
  */
 @CompileStatic
 class QueryProcessor {
@@ -31,10 +33,12 @@ class QueryProcessor {
     private Map<Query, Template> cache = new ConcurrentHashMap<>()
 
     private Template get(Query query) {
-        if (!cache[query]) {
-            cache[query] = new GStringTemplateEngine().createTemplate(query.sql)
+        Template template = cache[query]
+        if (!template) {
+            template = new GStringTemplateEngine().createTemplate(query.sql)
+            cache[query] = template
         }
-        cache[query]
+        template
     }
 
     String exec(Query query, Map<String, Object> params) {
@@ -54,5 +58,15 @@ class QueryProcessor {
 
         @Override
         boolean containsKey(Object key) { true }
+
+        @Override
+        V get(Object key) {
+            Object value = super.get(key)
+            if (value != null && value instanceof String) {
+                //FIXME only Oracle and PostgreSQL
+                return (V) ((String) value).replaceAll("'", "''")
+            }
+            return (V) value
+        }
     }
 }
