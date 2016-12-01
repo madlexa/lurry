@@ -17,7 +17,6 @@ package one.trifle.lurry
 
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
-import groovy.transform.CompileStatic
 import one.trifle.lurry.model.Query
 
 import java.util.concurrent.ConcurrentHashMap
@@ -27,10 +26,19 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @author Aleksey Dobrynin
  */
-@CompileStatic
 class QueryProcessor {
 
     private Map<Query, Template> cache = new ConcurrentHashMap<>()
+
+    QueryProcessor() {
+        // TODO with connector
+        Binding.metaClass.escape = { String str ->
+            str.replaceAll("'", "''")
+        }
+        Binding.metaClass.quote = { String str ->
+            "'$str'"
+        }
+    }
 
     private Template get(Query query) {
         Template template = cache[query]
@@ -42,31 +50,11 @@ class QueryProcessor {
     }
 
     String exec(Query query, Map<String, Object> params) {
-        get(query).make(new MissingPropertyMap(params)).toString()
-    }
-
-    /**
-     * TODO optimize
-     */
-    private static class MissingPropertyMap<K, V> extends HashMap<K, V> {
-        MissingPropertyMap(Map<K, V> params) {
-            params.getMetaClass().getMetaMethods().each {
-                this.getMetaClass()[it.name] = it
-            }
-            putAll(params)
+        Map<String, Object> vals = new HashMap<String, Object>() {
+            @Override
+            boolean containsKey(Object key) { true }
         }
-
-        @Override
-        boolean containsKey(Object key) { true }
-
-        @Override
-        V get(Object key) {
-            Object value = super.get(key)
-            if (value != null && value instanceof String) {
-                //FIXME only Oracle and PostgreSQL
-                return (V) ((String) value).replaceAll("'", "''")
-            }
-            return (V) value
-        }
+        vals.putAll(params)
+        get(query).make(vals).toString()
     }
 }
