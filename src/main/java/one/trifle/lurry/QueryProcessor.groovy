@@ -30,14 +30,17 @@ class QueryProcessor {
 
     private Map<Query, Template> cache = new ConcurrentHashMap<>()
 
-    QueryProcessor() {
-        // TODO with connector
-        Binding.metaClass.escape = { String str ->
-            str.replaceAll("'", "''")
+    String exec(Query query, Map<String, Object> params) {
+        Map<String, Object> vals = new HashMap<String, Object>() {
+            @Override
+            boolean containsKey(Object key) { true }
         }
-        Binding.metaClass.quote = { String str ->
-            "'$str'"
+        vals.putAll(params)
+        String result = ""
+        use(SafeString) {
+            result = get(query).make(vals).toString()
         }
+        return result
     }
 
     private Template get(Query query) {
@@ -49,12 +52,15 @@ class QueryProcessor {
         template
     }
 
-    String exec(Query query, Map<String, Object> params) {
-        Map<String, Object> vals = new HashMap<String, Object>() {
-            @Override
-            boolean containsKey(Object key) { true }
+    // TODO login from database type
+    @Category(String)
+    private class SafeString {
+        String escape() {
+            this.replaceAll("'", "''")
         }
-        vals.putAll(params)
-        get(query).make(vals).toString()
+
+        String quote() {
+            "'${this}'"
+        }
     }
 }

@@ -93,13 +93,11 @@ public class XmlParser implements Parser {
 
             switch (qName) {
                 case "entity":
-                    entity = new Entity();
-                    entity.setName(attributes.getValue("name"));
+                    entity = new Entity(attributes.getValue("name"));
                     queries = new ArrayList<>();
                     break;
                 case "query":
-                    query = new Query();
-                    query.setName(attributes.getValue("name"));
+                    query = new Query(attributes.getValue("name"));
             }
         }
 

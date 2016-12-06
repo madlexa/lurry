@@ -24,11 +24,7 @@ class XmlParserTest {
     </entity>
 </entities>
 """.getBytes("UTF-8")))
-        assertEquals([
-                [name   : "Test name",
-                 queries: [
-                         [name: "Test query",
-                          sql : "Test sql"] as Query]] as Entity], entities)
+        assertEquals([new Entity("Test name", [new Query("Test query", "Test sql")] as Query[])], entities)
     }
 
     @Test
@@ -51,21 +47,17 @@ class XmlParserTest {
 """.getBytes("UTF-8")))
         entities.sort({ a, b -> (a.name <=> b.name) })
         entities.each { it.queries.sort({ a, b -> (a.name <=> b.name) }) }
+
         assertEquals([
-                [name   : "name 1",
-                 queries: [
-                         [name: "query 1.1",
-                          sql : "sql 1.1"] as Query,
-                         [name: "query 1.2",
-                          sql : "sql 1.2"] as Query,
-                 ]] as Entity,
-                [name   : "name 2",
-                 queries: [
-                         [name: "query 2.1",
-                          sql : "sql 2.1"] as Query,
-                         [name: "query 2.2",
-                          sql : "sql 2.2"] as Query,
-                 ]] as Entity], entities)
+                new Entity("name 1", [
+                        new Query("query 1.1", "sql 1.1"),
+                        new Query("query 1.2", "sql 1.2")
+                ] as Query[]),
+                new Entity("name 2", [
+                        new Query("query 2.1", "sql 2.1"),
+                        new Query("query 2.2", "sql 2.2")
+                ] as Query[])
+        ], entities)
     }
 
     @Test(expected = LurryParseFormatException)

@@ -9,7 +9,7 @@ class QueryProcessorTest extends Specification {
     @Unroll
     "template(#sql, #params) == #result"() {
         expect:
-        new QueryProcessor().exec(new Query(name: "test", sql: template), params as Map<String, Object>) == result
+        new QueryProcessor().exec(new Query("test", template), params as Map<String, Object>) == result
 
         where:
         template                                        | params                          || result
@@ -22,8 +22,8 @@ class QueryProcessorTest extends Specification {
         'ID IN (<% out << (ids.join(",")) %>)'          | [ids: [1, 2, 3]]                || "ID IN (1,2,3)"
         'ID IN (${ids.collect{"\'$it\'"}.join(\',\')})' | [ids: ["1", "2", "3"]]          || "ID IN ('1','2','3')"
         "a = '\$a' AND b = '\$b'"                       | [a: "a"]                        || "a = 'a' AND b = 'null'"
-        "a = '\${escape(a)}' AND b = '\$b'"             | [a: "'a'"]                      || "a = '''a''' AND b = 'null'"
-        'a = ${escape(a)}'                              | [a: 'a']                        || 'a = a'
-        'a = ${quote(a)}'                               | [a: 'a']                        || "a = 'a'"
+        "a = '\${a.escape()}' AND b = '\$b'"            | [a: "'a'"]                      || "a = '''a''' AND b = 'null'"
+        'a = ${a.escape()}'                             | [a: 'a']                        || 'a = a'
+        'a = ${a.quote()}'                              | [a: 'a']                        || "a = 'a'"
     }
 }
