@@ -26,14 +26,16 @@ class EntityTest extends Specification {
         obj1.equals(obj2) == result
 
         where:
-        obj1                                                            | obj2                                                            || result
-        new Entity('test')                                              | new Entity('test')                                              || true
-        new Entity('test', null)                                        | new Entity('test', null)                                        || true
-        new Entity('test', [] as Query[])                               | new Entity('test', null)                                        || true
-        new Entity('test')                                              | new Entity('2')                                                 || false
-        new Entity('test')                                              | '2'                                                             || false
-        new Entity('test')                                              | obj1                                                            || true
-        new Entity('test', [new Query('1')] as Query[])                 | new Entity('test', [new Query('1')] as Query[])                 || true
+        obj1                                            | obj2                                            || result
+        new Entity('test')                              | new Entity('test')                              || true
+        new Entity('test', null)                        | new Entity('test', null)                        || true
+        new Entity('test', [] as Query[])               | new Entity('test', null)                        || true
+        new Entity('test', null)                        | new Entity('test', [] as Query[])               || true
+        new Entity('test', [] as Query[])               | new Entity('test', [] as Query[])               || true
+        new Entity('test')                              | new Entity('2')                                 || false
+        new Entity('test')                              | '2'                                             || false
+        new Entity('test')                              | obj1                                            || true
+        new Entity('test', [new Query('1')] as Query[]) | new Entity('test', [new Query('1')] as Query[]) || true
         new Entity('test', [new Query('1')] as Query[])                 | new Entity('test', [new Query('2')] as Query[])                 || false
         new Entity('test', [new Query('1'), new Query('2')] as Query[]) | new Entity('test', [new Query('2')] as Query[])                 || false
         new Entity('test', [new Query('1'), new Query('2')] as Query[]) | new Entity('test', [new Query('1'), new Query('2')] as Query[]) || true

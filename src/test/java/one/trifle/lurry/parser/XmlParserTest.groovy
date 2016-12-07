@@ -25,6 +25,7 @@ class XmlParserTest {
 </entities>
 """.getBytes("UTF-8")))
         assertEquals([new Entity("Test name", [new Query("Test query", "Test sql")] as Query[])], entities)
+        assertEquals("Test sql", entities.first().queries.first().sql)
     }
 
     @Test
@@ -58,6 +59,7 @@ class XmlParserTest {
                         new Query("query 2.2", "sql 2.2")
                 ] as Query[])
         ], entities)
+        assertEquals("sql 1.2", entities.first().queries.last().sql)
     }
 
     @Test(expected = LurryParseFormatException)
