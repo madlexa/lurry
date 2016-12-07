@@ -6,11 +6,13 @@ GQuery Processor
 
 Lurry is a library with support for custom SQL, which allows using Groovy templates - `GString`. It enables to use groovy constructions in SQL queries. 
 
-Lurry can use following formats for saving queries: `yaml`, `xml` and `json`. For data storage it can be used `files`, `http` and `smb`. In the future the list of formats and resources can be expanded. 
+Lurry can use following formats for saving queries: `yaml`, `xml` and `json`. 
+
+`files`, `http` and `smb` can be used for data storage. In the future the list of formats and resources can be expanded. 
 
 Lurry Goals: 
-* Simple and convenient way to use SQL with object-oriented applications 
-* Reduce count of queries
+* A simple and convenient way to use SQL with object-oriented applications 
+* The reduction of number of queries
  
 ### License
  

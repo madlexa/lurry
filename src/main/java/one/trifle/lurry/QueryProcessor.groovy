@@ -19,6 +19,8 @@ import groovy.text.GStringTemplateEngine
 import groovy.text.Template
 import one.trifle.lurry.model.Query
 
+import javax.sql.DataSource
+
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -28,8 +30,27 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class QueryProcessor {
 
+    private final DataSource source
+    private final DatabaseType type
     private Map<Query, Template> cache = new ConcurrentHashMap<>()
 
+    /**
+     * recommend single QueryProcessor for one DataSource
+     *
+     * @param source not null for execute query and escape strings in queries
+     */
+    QueryProcessor(DataSource source) {
+        this.source = source
+        this.type = DatabaseType.of(source?.getConnection()?.getMetaData()?.getDriverName())
+    }
+
+    /**
+     * inject params into sql
+     *
+     * @param query object with sql-template
+     * @param params data for inject
+     * @return sql for execute
+     */
     String exec(Query query, Map<String, Object> params) {
         Map<String, Object> vals = new HashMap<String, Object>() {
             @Override
@@ -43,6 +64,12 @@ class QueryProcessor {
         return result
     }
 
+    /**
+     * get cached template
+     *
+     * @param query
+     * @return GStringTemplate
+     */
     private Template get(Query query) {
         Template template = cache[query]
         if (!template) {

@@ -7,6 +7,8 @@ import one.trifle.lurry.parser.Parser
 import one.trifle.lurry.reader.Reader
 import org.junit.Test
 
+import javax.sql.DataSource
+
 import static org.junit.Assert.assertEquals
 import static org.mockito.Matchers.any
 import static org.mockito.Mockito.mock
@@ -14,15 +16,16 @@ import static org.mockito.Mockito.when
 
 @CompileStatic
 class QueryFactoryTest {
-    private Reader reader = mock(Reader.class)
-    private Parser parser = mock(Parser.class)
+    private Reader reader = mock(Reader)
+    private Parser parser = mock(Parser)
+    private DataSource source = mock(DataSource)
 
     @Test
     void simple() {
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([new Entity("entity", [new Query("query", "sql")] as Query[])])
 
-        QueryFactory factory = new QueryFactory(reader, parser)
+        QueryFactory factory = new QueryFactory(source, reader, parser)
         assertEquals("sql", factory.get("entity", "query", [:]))
         assertEquals("", factory.get("entity", "test", [:]))
     }
@@ -34,7 +37,7 @@ class QueryFactoryTest {
                 .thenReturn([new Entity("entity", [new Query("query1", "sql1")] as Query[])])
                 .thenReturn([new Entity("entity", [new Query("query2", "sql2")] as Query[])])
 
-        QueryFactory factory = new QueryFactory(reader, parser)
+        QueryFactory factory = new QueryFactory(source, reader, parser)
         assertEquals("sql1", factory.get("entity", "query1", [:]))
         assertEquals("sql2", factory.get("entity", "query2", [:]))
     }
@@ -52,7 +55,7 @@ class QueryFactoryTest {
                 new Entity("entity1", [new Query("query12", "sql12")] as Query[])
         ])
 
-        QueryFactory factory = new QueryFactory(reader, parser)
+        QueryFactory factory = new QueryFactory(source, reader, parser)
         assertEquals("sql11", factory.get("entity1", "query11", [test: "test"] as Map<String, Object>))
         assertEquals("sql12", factory.get("entity1", "query12", [test: "test"] as Map<String, Object>))
         assertEquals("sql21", factory.get("entity2", "query21", [test: "test"] as Map<String, Object>))

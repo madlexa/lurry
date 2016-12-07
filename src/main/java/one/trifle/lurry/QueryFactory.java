@@ -20,6 +20,8 @@ import one.trifle.lurry.model.Query;
 import one.trifle.lurry.parser.Parser;
 import one.trifle.lurry.reader.Reader;
 
+import javax.sql.DataSource;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,12 +35,13 @@ public class QueryFactory {
 
     private final Reader reader;
     private final Parser parser;
+    private final QueryProcessor processor;
     private Map<String, Query> cache = null;
-    private QueryProcessor processor = new QueryProcessor();
 
-    public QueryFactory(Reader reader, Parser parser) {
+    public QueryFactory(DataSource source, Reader reader, Parser parser) {
         this.reader = reader;
         this.parser = parser;
+        this.processor = new QueryProcessor(source);
     }
 
     private void init() {
