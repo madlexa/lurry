@@ -17,6 +17,8 @@ package one.trifle.lurry.reader;
 
 import one.trifle.lurry.exception.LurryPermissionException;
 import org.codehaus.groovy.util.ArrayIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,15 +32,20 @@ import java.util.Iterator;
  * @author Aleksey Dobrynin
  */
 public class FileReader implements Reader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReader.class);
+
     private final InputStream[] streams;
 
     public FileReader(File... files) {
+        LOGGER.debug("start read '{}' files", files.length);
         int size = files.length;
         streams = new InputStream[size];
         for (int i = 0; i < size; i++) {
             try {
+                LOGGER.debug("start read file [{}]", files[i].getName());
                 streams[i] = new FileInputStream(files[i]);
             } catch (FileNotFoundException exc) {
+                LOGGER.error("file not found [{}]", files[i].getName(), exc);
                 throw new LurryPermissionException("file not found [" + files[i].getName() + "]", exc);
             }
         }

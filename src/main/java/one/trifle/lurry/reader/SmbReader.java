@@ -21,6 +21,8 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import one.trifle.lurry.exception.LurryPermissionException;
 import org.codehaus.groovy.util.ArrayIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -33,17 +35,23 @@ import java.util.Iterator;
  * @author Aleksey Dobrynin
  */
 public class SmbReader implements Reader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SmbReader.class);
+
     private final InputStream[] streams;
 
     public SmbReader(String login, String password, String... paths) {
+        LOGGER.debug("start read '{}' urls", paths.length);
+
         int size = paths.length;
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication("", login, password);
         streams = new InputStream[size];
         for (int i = 0; i < size; i++) {
             try {
+                LOGGER.debug("start read smb [{}]", paths[i]);
                 SmbFile file = new SmbFile(paths[i], auth);
                 streams[i] = new SmbFileInputStream(file);
             } catch (MalformedURLException | SmbException | UnknownHostException exc) {
+                LOGGER.error("smb exception [{}]", paths[i], exc);
                 throw new LurryPermissionException("smb exception [" + paths[i] + "]", exc);
             }
         }

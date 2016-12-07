@@ -16,12 +16,12 @@
 package one.trifle.lurry.exception;
 
 /**
- * Specific lurry exception for resource permission error
+ * supper lurry exception for all module code
  *
  * @author Aleksey Dobrynin
  */
-public class LurryPermissionException extends LurryException {
-    public LurryPermissionException(String message, Throwable cause) {
+public abstract class LurryException extends RuntimeException {
+    public LurryException(String message, Throwable cause) {
         super(message, cause);
     }
 }

@@ -14,10 +14,10 @@ class EntityTest extends Specification {
 
         where:
         name   | queries                          || code
-        'test' | []                               || 3556498
-        'test' | null                             || 3556498
-        'test' | [new Query("1")]                 || 3556498
-        'test' | [new Query("1"), new Query("2")] || 3556498
+        Person | []                               || 556652879
+        Person | null                             || 556652879
+        Person | [new Query("1")]                 || 556652879
+        Person | [new Query("1"), new Query("2")] || 556652879
     }
 
     @Unroll
@@ -26,19 +26,23 @@ class EntityTest extends Specification {
         obj1.equals(obj2) == result
 
         where:
-        obj1                                            | obj2                                            || result
-        new Entity('test')                              | new Entity('test')                              || true
-        new Entity('test', null)                        | new Entity('test', null)                        || true
-        new Entity('test', [] as Query[])               | new Entity('test', null)                        || true
-        new Entity('test', null)                        | new Entity('test', [] as Query[])               || true
-        new Entity('test', [] as Query[])               | new Entity('test', [] as Query[])               || true
-        new Entity('test')                              | new Entity('2')                                 || false
-        new Entity('test')                              | '2'                                             || false
-        new Entity('test')                              | obj1                                            || true
-        new Entity('test', [new Query('1')] as Query[]) | new Entity('test', [new Query('1')] as Query[]) || true
-        new Entity('test', [new Query('1')] as Query[])                 | new Entity('test', [new Query('2')] as Query[])                 || false
-        new Entity('test', [new Query('1'), new Query('2')] as Query[]) | new Entity('test', [new Query('2')] as Query[])                 || false
-        new Entity('test', [new Query('1'), new Query('2')] as Query[]) | new Entity('test', [new Query('1'), new Query('2')] as Query[]) || true
-        new Entity('test', [new Query('1'), new Query('2')] as Query[]) | new Entity('test', [new Query('2'), new Query('1')] as Query[]) || false
+        obj1                                                            | obj2                                                            || result
+        new Entity(Person)                                              | new Entity(Person)                                              || true
+        new Entity(Person, null)                                        | new Entity(Person, null)                                        || true
+        new Entity(Person, [] as Query[])                               | new Entity(Person, null)                                        || true
+        new Entity(Person, null)                                        | new Entity(Person, [] as Query[])                               || true
+        new Entity(Person, [] as Query[])                               | new Entity(Person, [] as Query[])                               || true
+        new Entity(Person)                                              | new Entity(Person2)                                             || false
+        new Entity(Person)                                              | '2'                                                             || false
+        new Entity(Person)                                              | obj1                                                            || true
+        new Entity(Person, [new Query('1')] as Query[])                 | new Entity(Person, [new Query('1')] as Query[])                 || true
+        new Entity(Person, [new Query('1')] as Query[])                 | new Entity(Person, [new Query('2')] as Query[])                 || false
+        new Entity(Person, [new Query('1'), new Query('2')] as Query[]) | new Entity(Person, [new Query('2')] as Query[])                 || false
+        new Entity(Person, [new Query('1'), new Query('2')] as Query[]) | new Entity(Person, [new Query('1'), new Query('2')] as Query[]) || true
+        new Entity(Person, [new Query('1'), new Query('2')] as Query[]) | new Entity(Person, [new Query('2'), new Query('1')] as Query[]) || false
     }
+
+    static class Person {}
+
+    static class Person2 {}
 }

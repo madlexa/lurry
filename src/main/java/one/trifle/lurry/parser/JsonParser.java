@@ -20,12 +20,14 @@ import com.google.gson.JsonSyntaxException;
 import one.trifle.lurry.exception.LurryParseFormatException;
 import one.trifle.lurry.exception.LurryPermissionException;
 import one.trifle.lurry.model.Entity;
+import one.trifle.lurry.model.Query;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * implementation {@code Parser} is used to convert json to lurry format
@@ -73,7 +75,7 @@ public class JsonParser implements Parser {
             return new Mapper(result.toString("UTF-8")).map();
         } catch (IOException exc) {
             throw new LurryPermissionException("json parse error", exc);
-        } catch (JsonSyntaxException exc) {
+        } catch (JsonSyntaxException | ClassNotFoundException exc) {
             throw new LurryParseFormatException("json parse error", exc);
         }
     }
@@ -85,8 +87,19 @@ public class JsonParser implements Parser {
             this.json = json;
         }
 
-        List<Entity> map() throws IOException {
-            return Arrays.asList(new Gson().fromJson(json, Entity[].class));
+        List<Entity> map() throws IOException, ClassNotFoundException {
+            Map[] datas = new Gson().fromJson(json, Map[].class);
+            List<Entity> result = new ArrayList<>(datas.length);
+            for (Map data : datas) {
+                List<Map> queries = (List<Map>) data.get("queries");
+                Entity entity = new Entity(Class.forName(data.get("name").toString()), new Query[queries.size()]);
+                for (int i = 0; i < queries.size(); i++) {
+                    entity.getQueries()[i] = new Query(queries.get(i).get("name").toString(),
+                            (String) queries.get(i).get("sql"));
+                }
+                result.add(entity);
+            }
+            return result;
         }
     }
 }

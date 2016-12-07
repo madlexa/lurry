@@ -13,52 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry
+package one.trifle.lurry.logic
 
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
+import one.trifle.lurry.database.DatabaseType
 import one.trifle.lurry.model.Query
 
 import javax.sql.DataSource
 
+import java.sql.Connection
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * TODO
+ * Processor for transform Lurry-Template to Sql String
+ *
  *
  * @author Aleksey Dobrynin
  */
 class QueryProcessor {
 
-    private final DataSource source
-    private final DatabaseType type
+    private DatabaseType type = DatabaseType.DEFAULT
     private Map<Query, Template> cache = new ConcurrentHashMap<>()
 
     /**
      * recommend single QueryProcessor for one DataSource
      *
-     * @param source not null for execute query and escape strings in queries
+     * @param source not null for prepare query and escape strings in queries
      */
     QueryProcessor(DataSource source) {
-        this.source = source
-        this.type = DatabaseType.of(source?.getConnection()?.getMetaData()?.getDriverName())
+        Connection conn = source?.connection
+        try {
+            this.type = DatabaseType.of(conn?.metaData?.driverName)
+        } finally {
+            conn?.close()
+        }
     }
 
     /**
-     * inject params into sql
+     * inject params into sql and exec specific code in template
      *
      * @param query object with sql-template
      * @param params data for inject
      * @return sql for execute
      */
-    String exec(Query query, Map<String, Object> params) {
+    String prepare(Query query, Map<String, Object> params) {
         Map<String, Object> vals = new HashMap<String, Object>() {
             @Override
             boolean containsKey(Object key) { true }
         }
         vals.putAll(params)
         String result = ""
-        use(SafeString) {
+        use(type.mixed) {
             result = get(query).make(vals).toString()
         }
         return result
@@ -77,17 +83,5 @@ class QueryProcessor {
             cache[query] = template
         }
         template
-    }
-
-    // TODO login from database type
-    @Category(String)
-    private class SafeString {
-        String escape() {
-            this.replaceAll("'", "''")
-        }
-
-        String quote() {
-            "'${this}'"
-        }
     }
 }

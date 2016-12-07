@@ -18,7 +18,7 @@ class JsonParserTest {
     void oneEntityOneQuery() {
         List<Entity> entities = new JsonParser().parse(new ByteArrayInputStream("""
 [{
-    "name": "Test name",
+    "name": "one.trifle.lurry.parser.JsonParserTest\$Person",
     "queries": [{
         "name": "Test query",
         "sql": "Test sql"
@@ -26,7 +26,7 @@ class JsonParserTest {
 }]
 """.getBytes("UTF-8")))
         assertEquals([
-                new Entity("Test name",
+                new Entity(Person.class,
                         [new Query("Test query", "Test sql")] as Query[])], entities)
     }
 
@@ -34,7 +34,7 @@ class JsonParserTest {
     void manyEntitiesManyQueries() {
         List<Entity> entities = new JsonParser().parse(new ByteArrayInputStream("""
 [{
-    "name": "name 1",
+    "name": "one.trifle.lurry.parser.JsonParserTest\$Person",
     "queries": [{
         "name": "query 1.1",
         "sql": "sql 1.1"
@@ -43,7 +43,7 @@ class JsonParserTest {
         "sql": "sql 1.2"
     }]
 },{
-    "name": "name 2",
+    "name": "one.trifle.lurry.parser.JsonParserTest\$Company",
     "queries": [{
         "name": "query 2.1",
         "sql": "sql 2.1"
@@ -53,16 +53,16 @@ class JsonParserTest {
     }]
 }]
 """.getBytes("UTF-8")))
-        entities.sort({ a, b -> (a.name <=> b.name) })
+        entities.sort({ a, b -> (a.name.getName() <=> b.name.getName()) })
         entities.each { it.queries.sort({ a, b -> (a.name <=> b.name) }) }
         assertEquals([
-                new Entity("name 1", [
-                        new Query("query 1.1", "sql 1.1"),
-                        new Query("query 1.2", "sql 1.2")
-                ] as Query[]),
-                new Entity("name 2", [
+                new Entity(Company.class, [
                         new Query("query 2.1", "sql 2.1"),
                         new Query("query 2.2", "sql 2.2")
+                ] as Query[]),
+                new Entity(Person.class, [
+                        new Query("query 1.1", "sql 1.1"),
+                        new Query("query 1.2", "sql 1.2")
                 ] as Query[])], entities)
     }
 
@@ -77,4 +77,18 @@ class JsonParserTest {
         when(stream.read(any(byte))).thenThrow(new IOException())
         new JsonParser().parse(stream)
     }
+
+    @Test(expected = LurryParseFormatException)
+    void classNotFoundException() {
+        new JsonParser().parse(new ByteArrayInputStream("""
+[{
+    "name": "test",
+    "queries": []
+}]
+""".getBytes("UTF-8")))
+    }
+
+    static class Person {}
+
+    static class Company {}
 }

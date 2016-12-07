@@ -27,22 +27,22 @@ public class Entity {
     /**
      * entity name
      */
-    private final String name;
+    private final Class name;
     /**
      * all queries for this entity
      */
     private Query[] queries;
 
-    public Entity(String name) {
+    public Entity(Class name) {
         this.name = name;
     }
 
-    public Entity(String name, Query[] queries) {
+    public Entity(Class name, Query[] queries) {
         this.name = name;
         this.queries = queries;
     }
 
-    public String getName() {
+    public Class getName() {
         return name;
     }
 
@@ -56,7 +56,7 @@ public class Entity {
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return name.getName().hashCode();
     }
 
     @Override

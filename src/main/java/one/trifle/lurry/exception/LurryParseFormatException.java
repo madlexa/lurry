@@ -20,7 +20,7 @@ package one.trifle.lurry.exception;
  *
  * @author Aleksey Dobrynin
  */
-public class LurryParseFormatException extends RuntimeException {
+public class LurryParseFormatException extends LurryException {
     public LurryParseFormatException(String message, Throwable cause) {
         super(message, cause);
     }

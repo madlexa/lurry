@@ -17,14 +17,14 @@ class XmlParserTest {
     void oneEntityOneQuery() {
         List<Entity> entities = new XmlParser().parse(new ByteArrayInputStream("""
 <entities>
-    <entity name="Test name">
+    <entity name="one.trifle.lurry.parser.XmlParserTest\$Person">
         <queries>
             <query name="Test query">Test sql</query>
         </queries>
     </entity>
 </entities>
 """.getBytes("UTF-8")))
-        assertEquals([new Entity("Test name", [new Query("Test query", "Test sql")] as Query[])], entities)
+        assertEquals([new Entity(Person, [new Query("Test query", "Test sql")] as Query[])], entities)
         assertEquals("Test sql", entities.first().queries.first().sql)
     }
 
@@ -32,13 +32,13 @@ class XmlParserTest {
     void manyEntitiesManyQueries() {
         List<Entity> entities = new XmlParser().parse(new ByteArrayInputStream("""
 <entities>
-    <entity name="name 1">
+    <entity name="one.trifle.lurry.parser.XmlParserTest\$Company">
         <queries>
             <query name="query 1.1">sql 1.1</query>
             <query name="query 1.2">sql 1.2</query>
         </queries>
     </entity>
-        <entity name="name 2">
+        <entity name="one.trifle.lurry.parser.XmlParserTest\$Person">
         <queries>
             <query name="query 2.1">sql 2.1</query>
             <query name="query 2.2">sql 2.2</query>
@@ -46,15 +46,15 @@ class XmlParserTest {
     </entity>
 </entities>
 """.getBytes("UTF-8")))
-        entities.sort({ a, b -> (a.name <=> b.name) })
+        entities.sort({ a, b -> (a.name.getName() <=> b.name.getName()) })
         entities.each { it.queries.sort({ a, b -> (a.name <=> b.name) }) }
 
         assertEquals([
-                new Entity("name 1", [
+                new Entity(Company, [
                         new Query("query 1.1", "sql 1.1"),
                         new Query("query 1.2", "sql 1.2")
                 ] as Query[]),
-                new Entity("name 2", [
+                new Entity(Person, [
                         new Query("query 2.1", "sql 2.1"),
                         new Query("query 2.2", "sql 2.2")
                 ] as Query[])
@@ -73,4 +73,20 @@ class XmlParserTest {
         when(stream.read(any(byte))).thenThrow(new IOException())
         new XmlParser().parse(stream)
     }
+
+    @Test(expected = LurryParseFormatException)
+    void classNotFoundException() {
+        new XmlParser().parse(new ByteArrayInputStream("""
+<entities>
+    <entity name="test">
+        <queries />
+    </entity>
+</entities>
+""".getBytes("UTF-8")))
+    }
+
+
+    static class Person {}
+
+    static class Company {}
 }

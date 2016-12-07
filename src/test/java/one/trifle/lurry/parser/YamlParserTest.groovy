@@ -17,37 +17,37 @@ class YamlParserTest {
     @Test
     void oneEntityOneQuery() {
         List<Entity> entities = new YamlParser().parse(new ByteArrayInputStream("""
-Test name:
+one.trifle.lurry.parser.YamlParserTest\$Person:
     Test query: |-
         Test sql
 """.getBytes("UTF-8")))
-        assertEquals([new Entity("Test name", [new Query("Test query", "Test sql")] as Query[])], entities)
+        assertEquals([new Entity(Person, [new Query("Test query", "Test sql")] as Query[])], entities)
     }
 
     @Test
     void manyEntitiesManyQueries() {
         List<Entity> entities = new YamlParser().parse(new ByteArrayInputStream("""
-name 1:
+one.trifle.lurry.parser.YamlParserTest\$Person:
     query 1.1: |-
         sql 1.1
     query 1.2: |-
         sql 1.2
-name 2:
+one.trifle.lurry.parser.YamlParserTest\$Company:
     query 2.1: |-
         sql 2.1
     query 2.2: |-
         sql 2.2
 """.getBytes("UTF-8")))
-        entities.sort({ a, b -> (a.name <=> b.name) })
+        entities.sort({ a, b -> (a.name.getName() <=> b.name.getName()) })
         entities.each { it.queries.sort({ a, b -> (a.name <=> b.name) }) }
         assertEquals([
-                new Entity("name 1", [
-                        new Query("query 1.1", "sql 1.1"),
-                        new Query("query 1.2", "sql 1.2")
-                ] as Query[]),
-                new Entity("name 2", [
+                new Entity(Company, [
                         new Query("query 2.1", "sql 2.1"),
                         new Query("query 2.2", "sql 2.2")
+                ] as Query[]),
+                new Entity(Person, [
+                        new Query("query 1.1", "sql 1.1"),
+                        new Query("query 1.2", "sql 1.2")
                 ] as Query[])
         ], entities)
     }
@@ -63,4 +63,17 @@ name 2:
         when(stream.read(any(byte))).thenThrow(new IOException())
         new YamlParser().parse(stream)
     }
+
+    @Test(expected = LurryParseFormatException)
+    void classNotFoundException() {
+        new YamlParser().parse(new ByteArrayInputStream("""
+test:
+    Test query: |-
+        Test sql
+""".getBytes("UTF-8")))
+    }
+
+    static class Person {}
+
+    static class Company {}
 }

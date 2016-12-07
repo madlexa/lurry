@@ -17,6 +17,8 @@ package one.trifle.lurry.reader;
 
 import one.trifle.lurry.exception.LurryPermissionException;
 import org.codehaus.groovy.util.ArrayIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,15 +31,20 @@ import java.util.Iterator;
  * @author Aleksey Dobrynin
  */
 public class HttpReader implements Reader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpReader.class);
+
     private final InputStream[] streams;
 
     public HttpReader(URL... urls) {
+        LOGGER.debug("start read '{}' urls", urls.length);
         int size = urls.length;
         streams = new InputStream[size];
         for (int i = 0; i < size; i++) {
             try {
+                LOGGER.debug("start read url [{}]", urls[i].getFile());
                 streams[i] = urls[i].openStream();
             } catch (IOException exc) {
+                LOGGER.error("url not read [{}]", urls[i].getFile(), exc);
                 throw new LurryPermissionException("url not read [" + urls[i].getFile() + "]", exc);
             }
         }

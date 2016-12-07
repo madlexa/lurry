@@ -1,4 +1,4 @@
-package one.trifle.lurry
+package one.trifle.lurry.database
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -7,33 +7,6 @@ import spock.lang.Unroll
  * @author Aleksey Dobrynin
  */
 class DatabaseTypeTest extends Specification {
-    @Unroll
-    "MYSQL escape(#str) == #escape"() {
-        expect:
-        ((DatabaseType) type).escape(str) == escape
-
-        where:
-        type               | str          || escape
-        DatabaseType.MYSQL | "test"       || "test"
-        DatabaseType.MYSQL | null         || null
-        DatabaseType.MYSQL | "\"'test'\"" || "\"''test''\""
-        DatabaseType.MYSQL | "\\test\\"   || "\\\\test\\\\"
-    }
-
-    @Unroll
-    "escape(#str) == #escape"() {
-        expect:
-        DatabaseType.values().findAll { it != DatabaseType.MYSQL }.each {
-            assert it.escape(str) == escape
-        }
-
-        where:
-        str          || escape
-        "test"       || "test"
-        null         || null
-        "\"'test'\"" || "\"''test''\""
-        "\\test\\"   || "\\test\\"
-    }
 
     @Unroll
     "DatabaseType.of(#driver) == #type"() {
@@ -52,6 +25,24 @@ class DatabaseTypeTest extends Specification {
         "org.apache.cassandra.cql.jdbc.CassandraDriver" || DatabaseType.CASSANDRA
         ""                                              || DatabaseType.DEFAULT
         "test"                                          || DatabaseType.DEFAULT
+    }
+
+    @Unroll
+    "#type.mixed == #clazz"() {
+        expect:
+        type.mixed == clazz
+
+        where:
+        type                   || clazz
+        DatabaseType.MYSQL     || MySqlSafeString
+        DatabaseType.ORACLE    || DefaultSafeString
+        DatabaseType.POSTGRE   || DefaultSafeString
+        DatabaseType.H2        || DefaultSafeString
+        DatabaseType.DB2       || DefaultSafeString
+        DatabaseType.MSSQL     || DefaultSafeString
+        DatabaseType.SQLITE    || DefaultSafeString
+        DatabaseType.CASSANDRA || DefaultSafeString
+        DatabaseType.DEFAULT   || DefaultSafeString
     }
 
 }

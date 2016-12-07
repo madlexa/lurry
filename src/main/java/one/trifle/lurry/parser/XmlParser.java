@@ -93,11 +93,18 @@ public class XmlParser implements Parser {
 
             switch (qName) {
                 case "entity":
-                    entity = new Entity(attributes.getValue("name"));
+                    try {
+                        entity = new Entity(Class.forName(attributes.getValue("name")));
+                        entities.add(entity);
+                    } catch (ClassNotFoundException exc) {
+                        throw new LurryParseFormatException("xml parse error", exc);
+                    }
                     queries = new ArrayList<>();
                     break;
                 case "query":
                     query = new Query(attributes.getValue("name"));
+                    queries.add(query);
+                    break;
             }
         }
 
@@ -108,11 +115,9 @@ public class XmlParser implements Parser {
                 //Add the employee to list once end tag is found
                 case "entity":
                     entity.setQueries(queries.toArray(new Query[0]));
-                    entities.add(entity);
                     break;
                 case "query":
                     query.setSql(content);
-                    queries.add(query);
                     break;
             }
         }

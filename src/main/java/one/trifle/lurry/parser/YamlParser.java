@@ -34,15 +34,17 @@ import java.util.Map;
  * yaml example:
  * <pre>
  * com.mysite.Person:
- *     get: |-
+ *     get:
+ *         mapper: com.mysite.PersonGetMapper
+ *         sql: |-
  *             SELECT *
  *             FROM persons
  *             WHERE ${id ? "ID = $id" : ''}
- *                   ${login ? 'login = ' + login : ''}
+ *                   ${login ? "login = ${login.escape()} " : ""}
  *     delete: :-
  *             DELETE FROM persons
  *             WHERE ${id ? 'ID = ' + id : ''}
- *                   ${login ? 'login = ' + login : ''}
+ *                   ${login ? "login = ${login.escape()}" : ''}
  * com.mysite.Company:
  *     get: SELECT * FROM companies WHERE ID = $id
  *     delete: DELETE FROM companies WHERE ID = $id
@@ -55,8 +57,8 @@ public class YamlParser implements Parser {
     public List<Entity> parse(InputStream source) {
         try {
             return new Mapper(source).map();
-        } catch (ConstructorException exc) {
-            throw new LurryParseFormatException("yaml format exception", null);
+        } catch (ConstructorException | ClassNotFoundException exc) {
+            throw new LurryParseFormatException("yaml format exception", exc);
         } catch (YAMLException exc) {
             throw new LurryPermissionException("yaml parse error", exc);
         }
@@ -69,11 +71,11 @@ public class YamlParser implements Parser {
             this.source = source;
         }
 
-        List<Entity> map() {
+        List<Entity> map() throws ClassNotFoundException {
             Map data = new Yaml().loadAs(source, Map.class);
             List<Entity> entities = new ArrayList<>(data.size());
             for (Map.Entry<String, Map<String, String>> yamlEntity : ((Map<String, Map<String, String>>) data).entrySet()) {
-                Entity entity = new Entity(yamlEntity.getKey(), new Query[yamlEntity.getValue().size()]);
+                Entity entity = new Entity(Class.forName(yamlEntity.getKey()), new Query[yamlEntity.getValue().size()]);
                 int position = 0;
                 for (Map.Entry<String, String> yamlQuery : yamlEntity.getValue().entrySet()) {
                     entity.getQueries()[position++] = new Query(yamlQuery.getKey(), yamlQuery.getValue());

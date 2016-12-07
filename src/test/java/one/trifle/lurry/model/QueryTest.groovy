@@ -14,8 +14,8 @@ class QueryTest extends Specification {
 
         where:
         name   | sql   || code
-        'test' | null  || 3556498
         'test' | ""    || 3556498
+        'test' | null  || 3556498
         'test' | "sql" || 3556498
     }
 
