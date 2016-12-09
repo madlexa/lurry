@@ -138,7 +138,7 @@ public class GQueryTemplate {
 
     /**
      * Method fined query with sql-template by entity and queryName
-     * after inject params and execute sql. Use {@link DefaultRowMapper}
+     * after inject params and execute sql. Use DefaultRowMapper
      *
      * @param entity    result class
      * @param queryName name from source
