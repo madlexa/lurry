@@ -107,7 +107,7 @@ public class GQueryTemplate {
     }
 
     /**
-     * Method fined query with sql-template by entity and queryName
+     * Method find query with sql-template by entity and queryName
      * after inject params and execute sql
      *
      * @param entity    result class
@@ -137,7 +137,7 @@ public class GQueryTemplate {
     }
 
     /**
-     * Method fined query with sql-template by entity and queryName
+     * Method find query with sql-template by entity and queryName
      * after inject params and execute sql. Use DefaultRowMapper
      *
      * @param entity    result class
@@ -151,7 +151,7 @@ public class GQueryTemplate {
     }
 
     /**
-     * Method fined query with sql-template by entity and queryName
+     * Method find query with sql-template by entity and queryName
      * after inject params and execute sql. Use {@link DefaultMapRowMapper}
      *
      * @param entity    result class
@@ -161,6 +161,81 @@ public class GQueryTemplate {
      */
     public List<Map<String, Object>> queryMap(Class entity, String queryName, Map<String, Object> params) {
         return queryList(entity, queryName, params, new DefaultMapRowMapper());
+    }
+
+    /**
+     * Insert method find query with sql-template by entity and queryName
+     * after inject params and execute sql.
+     *
+     * @param entity    find class
+     * @param queryName name from source
+     * @param params    params for inject in template
+     * @return inserted id
+     */
+    public Long insert(Class entity, String queryName, Map<String, Object> params) {
+        String sql = getSql(entity, queryName, params);
+        LOGGER.trace("insert: sql = {}", sql);
+        try (Connection conn = source.getConnection();
+             Statement stmt = conn.createStatement()) {
+            int rows = stmt.executeUpdate(sql);
+            if (rows == 0) {
+                LOGGER.error("created {} fail, no rows inserted", entity.getName());
+                throw new LurrySqlException("Creating row failed, no rows affected.", null);
+            }
+
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        } catch (SQLException exc) {
+            LOGGER.error("execute query: entity = '{}', query = '{}'", entity.getName(), queryName, exc);
+            throw new LurrySqlException("Error: execute query", exc);
+        }
+        LOGGER.error("created {} fail, no rows inserted", entity.getName());
+        throw new LurrySqlException("created row fail, no rows inserted.", null);
+    }
+
+    /**
+     * Update method find query with sql-template by entity and queryName
+     * after inject params and execute sql.
+     *
+     * @param entity    find class
+     * @param queryName name from source
+     * @param params    params for inject in template
+     * @return rows affected
+     */
+    public int update(Class entity, String queryName, Map<String, Object> params) {
+        String sql = getSql(entity, queryName, params);
+        LOGGER.trace("update: sql = {}", sql);
+        try (Connection conn = source.getConnection();
+             Statement stmt = conn.createStatement()) {
+            return stmt.executeUpdate(sql);
+        } catch (SQLException exc) {
+            LOGGER.error("execute query: entity = '{}', query = '{}'", entity.getName(), queryName, exc);
+            throw new LurrySqlException("Error: execute query", exc);
+        }
+    }
+
+    /**
+     * Delete method find query with sql-template by entity and queryName
+     * after inject params and execute sql.
+     *
+     * @param entity    find class
+     * @param queryName name from source
+     * @param params    params for inject in template
+     * @return rows affected
+     */
+    public int delete(Class entity, String queryName, Map<String, Object> params) {
+        String sql = getSql(entity, queryName, params);
+        LOGGER.trace("delete: sql = {}", sql);
+        try (Connection conn = source.getConnection();
+             Statement stmt = conn.createStatement()) {
+            return stmt.executeUpdate(sql);
+        } catch (SQLException exc) {
+            LOGGER.error("execute query: entity = '{}', query = '{}'", entity.getName(), queryName, exc);
+            throw new LurrySqlException("Error: execute query", exc);
+        }
     }
 
     private String getCacheKey(Class entity, String query) {

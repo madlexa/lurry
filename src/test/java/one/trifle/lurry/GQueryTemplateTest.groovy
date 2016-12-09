@@ -1,6 +1,7 @@
 package one.trifle.lurry
 
 import groovy.transform.CompileStatic
+import junit.framework.AssertionFailedError
 import one.trifle.lurry.exception.LurryQueryException
 import one.trifle.lurry.exception.LurrySqlException
 import one.trifle.lurry.mapper.RowMapper
@@ -137,7 +138,7 @@ class GQueryTemplateTest {
         template.queryList(Person, "get", [id: 7] as Map<String, Object>, mapper)
     }
 
-    @Test(expected = LurrySqlException)
+    @Test
     void defaultMapperQueryList() {
         Connection conn = mock(Connection)
         Statement stmt = mock(Statement)
@@ -154,10 +155,18 @@ class GQueryTemplateTest {
         when(rs.next()).thenThrow(new SQLException())
 
         GQueryTemplate template = new GQueryTemplate(source, reader, parser)
-        template.queryList(Person, "get", [id: 7] as Map<String, Object>)
+        try {
+            template.queryList(Person, "get", [id: 7] as Map<String, Object>)
+            throw new AssertionFailedError()
+        } catch (LurrySqlException exc) {
+            verify(stmt, times(1)).executeQuery(eq("SELECT * from persons WHERE id = 7"))
+            verify(conn, atLeast(1)).close()
+            verify(stmt, atLeast(1)).close()
+            verify(rs, atLeast(1)).close()
+        }
     }
 
-    @Test(expected = LurrySqlException)
+    @Test
     void defaultMapMapperQueryList() {
         Connection conn = mock(Connection)
         Statement stmt = mock(Statement)
@@ -174,9 +183,227 @@ class GQueryTemplateTest {
         when(rs.next()).thenThrow(new SQLException())
 
         GQueryTemplate template = new GQueryTemplate(source, reader, parser)
-        template.queryMap(Person, "get", [id: 7] as Map<String, Object>)
+        try {
+            template.queryMap(Person, "get", [id: 7] as Map<String, Object>)
+            throw new AssertionFailedError()
+        } catch (LurrySqlException exc) {
+            verify(stmt, times(1)).executeQuery(eq("SELECT * from persons WHERE id = 7"))
+            verify(conn, atLeast(1)).close()
+            verify(stmt, atLeast(1)).close()
+            verify(rs, atLeast(1)).close()
+        }
     }
 
+    @Test
+    void insert() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+        ResultSet rs = mock(ResultSet)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("insert", "INSERT INTO persons (name) VALUES(\${name.escape()})")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeUpdate(any(String))).thenReturn(1)
+        when(stmt.getGeneratedKeys()).thenReturn(rs)
+        when(rs.next()).thenReturn(true)
+        when(rs.getLong(eq(1))).thenReturn(7L)
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+        long id = template.insert(Person, "insert", [name: "Tester"] as Map<String, Object>)
+
+        assertEquals(7l, id)
+        verify(stmt, times(1)).executeUpdate(eq("INSERT INTO persons (name) VALUES('Tester')"))
+        verify(conn, atLeast(1)).close()
+        verify(stmt, atLeast(1)).close()
+        verify(rs, atLeast(1)).close()
+    }
+
+
+    @Test
+    void noInsert() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("insert", "INSERT INTO persons (name) VALUES(\${name.escape()})")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeUpdate(any(String))).thenReturn(0)
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+
+        try {
+            template.insert(Person, "insert", [name: "Tester"] as Map<String, Object>)
+            throw new AssertionFailedError()
+        } catch (LurrySqlException exc) {
+            verify(stmt, times(1)).executeUpdate(eq("INSERT INTO persons (name) VALUES('Tester')"))
+            verify(conn, atLeast(1)).close()
+            verify(stmt, atLeast(1)).close()
+        }
+    }
+
+    @Test
+    void errInsert() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+        ResultSet rs = mock(ResultSet)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("insert", "INSERT INTO persons (name) VALUES(\${name.escape()})")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeUpdate(any(String))).thenReturn(1)
+        when(stmt.getGeneratedKeys()).thenReturn(rs)
+        when(rs.next()).thenReturn(false)
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+
+        try {
+            template.insert(Person, "insert", [name: "Tester"] as Map<String, Object>)
+            throw new AssertionFailedError()
+        } catch (LurrySqlException exc) {
+            verify(stmt, times(1)).executeUpdate(eq("INSERT INTO persons (name) VALUES('Tester')"))
+            verify(conn, atLeast(1)).close()
+            verify(stmt, atLeast(1)).close()
+            verify(rs, atLeast(1)).close()
+        }
+    }
+
+    @Test
+    void exceptionInsert() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("insert", "INSERT INTO persons (name) VALUES(\${name.escape()})")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeUpdate(any(String))).thenThrow(new SQLException())
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+
+        try {
+            template.insert(Person, "insert", [name: "Tester"] as Map<String, Object>)
+            throw new AssertionFailedError()
+        } catch (LurrySqlException exc) {
+            verify(stmt, times(1)).executeUpdate(eq("INSERT INTO persons (name) VALUES('Tester')"))
+            verify(conn, atLeast(1)).close()
+            verify(stmt, atLeast(1)).close()
+        }
+    }
+
+    @Test
+    void update() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("update", "UPDATE persons SET name = \${name.escape()} WHERE id = \$id")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeUpdate(any(String))).thenReturn(8)
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+
+        int cnt = template.update(Person, "update", [name: "Tester", id: 3L] as Map<String, Object>)
+
+        assertEquals(8, cnt)
+        verify(stmt, times(1)).executeUpdate(eq("UPDATE persons SET name = 'Tester' WHERE id = 3"))
+        verify(conn, atLeast(1)).close()
+        verify(stmt, atLeast(1)).close()
+    }
+
+    @Test
+    void errUpdate() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("update", "UPDATE persons SET name = \${name.escape()} WHERE id = \$id")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeUpdate(any(String))).thenThrow(new SQLException())
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+
+        try {
+            template.update(Person, "update", [name: "Tester", id: 3L] as Map<String, Object>)
+            throw new AssertionFailedError()
+        } catch (LurrySqlException exc) {
+            verify(stmt, times(1)).executeUpdate(eq("UPDATE persons SET name = 'Tester' WHERE id = 3"))
+            verify(conn, atLeast(1)).close()
+            verify(stmt, atLeast(1)).close()
+        }
+    }
+
+    @Test
+    void delete() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("delete", "DELETE FROM persons WHERE name = \${name.escape()}")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeUpdate(any(String))).thenReturn(8)
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+
+        int cnt = template.delete(Person, "delete", [name: "Tester"] as Map<String, Object>)
+
+        assertEquals(8, cnt)
+        verify(stmt, times(1)).executeUpdate(eq("DELETE FROM persons WHERE name = 'Tester'"))
+        verify(conn, atLeast(1)).close()
+        verify(stmt, atLeast(1)).close()
+    }
+
+    @Test
+    void errDelete() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("delete", "DELETE FROM persons WHERE name = \${name.escape()}")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeUpdate(any(String))).thenThrow(new SQLException())
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+
+        try {
+            template.delete(Person, "delete", [name: "Tester"] as Map<String, Object>)
+            throw new AssertionFailedError()
+        } catch (LurrySqlException exc) {
+            verify(stmt, times(1)).executeUpdate(eq("DELETE FROM persons WHERE name = 'Tester'"))
+            verify(conn, atLeast(1)).close()
+            verify(stmt, atLeast(1)).close()
+        }
+    }
 
     static class Person {}
 
