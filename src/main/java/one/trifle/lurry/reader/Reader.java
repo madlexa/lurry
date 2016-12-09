@@ -15,12 +15,15 @@
  */
 package one.trifle.lurry.reader;
 
+import one.trifle.lurry.GQueryTemplate;
+
 import java.io.InputStream;
 
 /**
- * A {@code Reader} is used to convert from resources to InputStream iterator
+ * An interface used by {@link GQueryTemplate} is used to convert from resources to InputStream iterator
  *
  * @author Aleksey Dobrynin
+ * @see GQueryTemplate
  */
 public interface Reader extends Iterable<InputStream> {
 }

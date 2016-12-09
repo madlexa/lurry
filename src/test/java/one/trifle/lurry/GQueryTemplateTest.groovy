@@ -157,6 +157,27 @@ class GQueryTemplateTest {
         template.queryList(Person, "get", [id: 7] as Map<String, Object>)
     }
 
+    @Test(expected = LurrySqlException)
+    void defaultMapMapperQueryList() {
+        Connection conn = mock(Connection)
+        Statement stmt = mock(Statement)
+        ResultSet rs = mock(ResultSet)
+
+        when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
+        when(parser.parse(any(InputStream))).thenReturn([
+                new Entity(Person, [new Query("get", "SELECT * from persons WHERE id = \$id")] as Query[]),
+                new Entity(Person, [new Query("view", "test")] as Query[])
+        ])
+        when(source.connection).thenReturn(conn)
+        when(conn.createStatement()).thenReturn(stmt)
+        when(stmt.executeQuery(any(String))).thenReturn(rs)
+        when(rs.next()).thenThrow(new SQLException())
+
+        GQueryTemplate template = new GQueryTemplate(source, reader, parser)
+        template.queryMap(Person, "get", [id: 7] as Map<String, Object>)
+    }
+
+
     static class Person {}
 
     static class Company {}

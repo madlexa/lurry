@@ -18,6 +18,8 @@ package one.trifle.lurry.parser;
 import one.trifle.lurry.exception.LurryParseFormatException;
 import one.trifle.lurry.model.Entity;
 import one.trifle.lurry.model.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -63,11 +65,15 @@ import java.util.List;
  * @author Aleksey Dobrynin
  */
 public class XmlParser implements Parser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(XmlParser.class);
+
     @Override
     public List<Entity> parse(InputStream source) {
+        LOGGER.trace("start parse xml source");
         try {
             return new Mapper(source).map();
         } catch (SAXException | ParserConfigurationException | IOException exc) {
+            LOGGER.trace("xml parse error", exc);
             throw new LurryParseFormatException("xml parse error", exc);
         }
     }
@@ -97,6 +103,7 @@ public class XmlParser implements Parser {
                         entity = new Entity(Class.forName(attributes.getValue("name")));
                         entities.add(entity);
                     } catch (ClassNotFoundException exc) {
+                        LOGGER.trace("xml parse error", exc);
                         throw new LurryParseFormatException("xml parse error", exc);
                     }
                     queries = new ArrayList<>();

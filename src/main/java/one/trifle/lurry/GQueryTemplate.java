@@ -18,6 +18,7 @@ package one.trifle.lurry;
 import one.trifle.lurry.exception.LurryQueryException;
 import one.trifle.lurry.exception.LurrySqlException;
 import one.trifle.lurry.logic.QueryProcessor;
+import one.trifle.lurry.mapper.DefaultMapRowMapper;
 import one.trifle.lurry.mapper.DefaultRowMapper;
 import one.trifle.lurry.mapper.RowMapper;
 import one.trifle.lurry.model.Entity;
@@ -40,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO
+ * Main class of lurry library for execute query and map to object
  *
  * @author Aleksey Dobrynin
  */
@@ -52,7 +53,6 @@ public class GQueryTemplate {
     private final DataSource source;
     private final QueryProcessor processor;
     private Map<String, Query> cache = null;
-//    private
 
     /**
      * recommend single QueryFactory for one DataSource
@@ -106,7 +106,18 @@ public class GQueryTemplate {
         return processor.prepare(query, params);
     }
 
-    public <T> List<T> queryList(Class<T> entity, String queryName, Map<String, Object> params, RowMapper<T> mapper) {
+    /**
+     * Method fined query with sql-template by entity and queryName
+     * after inject params and execute sql
+     *
+     * @param entity    result class
+     * @param queryName name from source
+     * @param params    params for inject in template
+     * @param mapper    instance for map row to java object
+     * @param <T>       result class after mapping
+     * @return unbounded list, after transform mapping
+     */
+    public <T> List<T> queryList(Class entity, String queryName, Map<String, Object> params, RowMapper<T> mapper) {
         String sql = getSql(entity, queryName, params);
         LOGGER.trace("execute: sql = {}", sql);
         List<T> result = new ArrayList<>();
@@ -125,8 +136,31 @@ public class GQueryTemplate {
         return result;
     }
 
+    /**
+     * Method fined query with sql-template by entity and queryName
+     * after inject params and execute sql. Use {@link DefaultRowMapper}
+     *
+     * @param entity    result class
+     * @param queryName name from source
+     * @param params    params for inject in template
+     * @param <T>       result class after mapping
+     * @return unbounded list, after transform mapping
+     */
     public <T> List<T> queryList(Class<T> entity, String queryName, Map<String, Object> params) {
         return queryList(entity, queryName, params, new DefaultRowMapper<>(entity));
+    }
+
+    /**
+     * Method fined query with sql-template by entity and queryName
+     * after inject params and execute sql. Use {@link DefaultMapRowMapper}
+     *
+     * @param entity    result class
+     * @param queryName name from source
+     * @param params    params for inject in template
+     * @return unbounded list with map key value
+     */
+    public List<Map<String, Object>> queryMap(Class entity, String queryName, Map<String, Object> params) {
+        return queryList(entity, queryName, params, new DefaultMapRowMapper());
     }
 
     private String getCacheKey(Class entity, String query) {

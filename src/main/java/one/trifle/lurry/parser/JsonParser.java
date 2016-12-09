@@ -21,6 +21,8 @@ import one.trifle.lurry.exception.LurryParseFormatException;
 import one.trifle.lurry.exception.LurryPermissionException;
 import one.trifle.lurry.model.Entity;
 import one.trifle.lurry.model.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -62,9 +64,11 @@ import java.util.Map;
  * @author Aleksey Dobrynin
  */
 public class JsonParser implements Parser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonParser.class);
 
     @Override
     public List<Entity> parse(InputStream source) {
+        LOGGER.trace("start parse json source");
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int length;
@@ -74,8 +78,10 @@ public class JsonParser implements Parser {
             }
             return new Mapper(result.toString("UTF-8")).map();
         } catch (IOException exc) {
+            LOGGER.trace("json parse error", exc);
             throw new LurryPermissionException("json parse error", exc);
         } catch (JsonSyntaxException | ClassNotFoundException exc) {
+            LOGGER.trace("json parse error", exc);
             throw new LurryParseFormatException("json parse error", exc);
         }
     }
@@ -87,12 +93,13 @@ public class JsonParser implements Parser {
             this.json = json;
         }
 
-        List<Entity> map() throws IOException, ClassNotFoundException {
-            Map[] datas = new Gson().fromJson(json, Map[].class);
-            List<Entity> result = new ArrayList<>(datas.length);
-            for (Map data : datas) {
-                List<Map> queries = (List<Map>) data.get("queries");
-                Entity entity = new Entity(Class.forName(data.get("name").toString()), new Query[queries.size()]);
+        @SuppressWarnings("unchecked")
+        List<Entity> map() throws ClassNotFoundException {
+            Map[] values = new Gson().fromJson(json, Map[].class);
+            List<Entity> result = new ArrayList<>(values.length);
+            for (Map value : values) {
+                List<Map> queries = (List<Map>) value.get("queries");
+                Entity entity = new Entity(Class.forName(value.get("name").toString()), new Query[queries.size()]);
                 for (int i = 0; i < queries.size(); i++) {
                     entity.getQueries()[i] = new Query(queries.get(i).get("name").toString(),
                             (String) queries.get(i).get("sql"));

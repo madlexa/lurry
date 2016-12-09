@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Processor for transform Lurry-Template to Sql String
  *
- *
  * @author Aleksey Dobrynin
  */
 class QueryProcessor {

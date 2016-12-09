@@ -15,15 +15,19 @@
  */
 package one.trifle.lurry.parser;
 
+import one.trifle.lurry.GQueryTemplate;
 import one.trifle.lurry.model.Entity;
+import one.trifle.lurry.reader.Reader;
 
 import java.io.InputStream;
 import java.util.List;
 
 /**
- * A {@code Parser} is used to create universal lurry query format
+ * An interface used by {@link GQueryTemplate} is used to create universal lurry query format
  *
  * @author Aleksey Dobrynin
+ * @see GQueryTemplate
+ * @see Reader
  */
 public interface Parser {
     /**

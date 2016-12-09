@@ -19,6 +19,8 @@ import one.trifle.lurry.exception.LurryParseFormatException;
 import one.trifle.lurry.exception.LurryPermissionException;
 import one.trifle.lurry.model.Entity;
 import one.trifle.lurry.model.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.ConstructorException;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -34,17 +36,15 @@ import java.util.Map;
  * yaml example:
  * <pre>
  * com.mysite.Person:
- *     get:
- *         mapper: com.mysite.PersonGetMapper
- *         sql: |-
- *             SELECT *
- *             FROM persons
- *             WHERE ${id ? "ID = $id" : ''}
- *                   ${login ? "login = ${login.escape()} " : ""}
- *     delete: :-
- *             DELETE FROM persons
- *             WHERE ${id ? 'ID = ' + id : ''}
- *                   ${login ? "login = ${login.escape()}" : ''}
+ *     get: |-
+ *         SELECT *
+ *         FROM persons
+ *         WHERE ${id ? "ID = $id" : ''}
+ *               ${login ? "login = ${login.escape()} " : ""}
+ *     delete: |-
+ *         DELETE FROM persons
+ *         WHERE ${id ? 'ID = ' + id : ''}
+ *               ${login ? "login = ${login.escape()}" : ''}
  * com.mysite.Company:
  *     get: SELECT * FROM companies WHERE ID = $id
  *     delete: DELETE FROM companies WHERE ID = $id
@@ -53,13 +53,18 @@ import java.util.Map;
  * @author Aleksey Dobrynin
  */
 public class YamlParser implements Parser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(YamlParser.class);
+
     @Override
     public List<Entity> parse(InputStream source) {
+        LOGGER.trace("start parse yaml source");
         try {
             return new Mapper(source).map();
         } catch (ConstructorException | ClassNotFoundException exc) {
+            LOGGER.trace("yaml parse error", exc);
             throw new LurryParseFormatException("yaml format exception", exc);
         } catch (YAMLException exc) {
+            LOGGER.trace("yaml parse error", exc);
             throw new LurryPermissionException("yaml parse error", exc);
         }
     }
@@ -71,10 +76,11 @@ public class YamlParser implements Parser {
             this.source = source;
         }
 
+        @SuppressWarnings("unchecked")
         List<Entity> map() throws ClassNotFoundException {
-            Map data = new Yaml().loadAs(source, Map.class);
-            List<Entity> entities = new ArrayList<>(data.size());
-            for (Map.Entry<String, Map<String, String>> yamlEntity : ((Map<String, Map<String, String>>) data).entrySet()) {
+            Map values = new Yaml().loadAs(source, Map.class);
+            List<Entity> entities = new ArrayList<>(values.size());
+            for (Map.Entry<String, Map<String, String>> yamlEntity : ((Map<String, Map<String, String>>) values).entrySet()) {
                 Entity entity = new Entity(Class.forName(yamlEntity.getKey()), new Query[yamlEntity.getValue().size()]);
                 int position = 0;
                 for (Map.Entry<String, String> yamlQuery : yamlEntity.getValue().entrySet()) {
