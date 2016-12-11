@@ -32,7 +32,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class QueryProcessor {
 
-    private DatabaseType type = DatabaseType.DEFAULT
+    private DatabaseType type
+    private final DataSource source;
     private Map<Query, Template> cache = new ConcurrentHashMap<>()
 
     /**
@@ -41,12 +42,19 @@ class QueryProcessor {
      * @param source not null for prepare query and escape strings in queries
      */
     QueryProcessor(DataSource source) {
-        Connection conn = source?.connection
-        try {
-            this.type = DatabaseType.of(conn?.metaData?.driverName)
-        } finally {
-            conn?.close()
+        this.source = source
+    }
+
+    private Class getMixed() {
+        if (type == null) {
+            Connection conn = source?.connection
+            try {
+                type = DatabaseType.of(conn?.metaData?.databaseProductName)
+            } finally {
+                conn?.close()
+            }
         }
+        type.mixed
     }
 
     /**
@@ -63,7 +71,7 @@ class QueryProcessor {
         }
         vals.putAll(params)
         String result = ""
-        use(type.mixed) {
+        use(getMixed()) {
             result = get(query).make(vals).toString()
         }
         return result

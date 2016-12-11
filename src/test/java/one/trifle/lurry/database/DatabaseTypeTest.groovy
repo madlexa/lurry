@@ -14,17 +14,18 @@ class DatabaseTypeTest extends Specification {
         DatabaseType.of(driver) == type
 
         where:
-        driver                                          || type
-        "com.mysql.jdbc.Driver"                         || DatabaseType.MYSQL
-        "oracle.jdbc.OracleDriver"                      || DatabaseType.ORACLE
-        "org.postgresql.Driver"                         || DatabaseType.POSTGRE
-        "org.h2.Driver"                                 || DatabaseType.H2
-        "com.ibm.db2.jcc.DB2Driver"                     || DatabaseType.DB2
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver"  || DatabaseType.MSSQL
-        "org.sqlite.JDBC"                               || DatabaseType.SQLITE
-        "org.apache.cassandra.cql.jdbc.CassandraDriver" || DatabaseType.CASSANDRA
-        ""                                              || DatabaseType.DEFAULT
-        "test"                                          || DatabaseType.DEFAULT
+        driver       || type
+        "MySQL"      || DatabaseType.MYSQL
+        "Oracle"     || DatabaseType.ORACLE
+        "PostgreSQL" || DatabaseType.POSTGRE
+        "H2"         || DatabaseType.H2
+        "Db2"        || DatabaseType.DB2
+        "SQLServer"  || DatabaseType.MSSQL
+        "SQLite"     || DatabaseType.SQLITE
+        "Cassandra"  || DatabaseType.CASSANDRA
+        ""           || DatabaseType.DEFAULT
+        "test"       || DatabaseType.DEFAULT
+
     }
 
     @Unroll

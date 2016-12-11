@@ -24,27 +24,29 @@ import java.util.Arrays;
  * @author Aleksey Dobrynin
  */
 public enum DatabaseType {
-    MYSQL("com.mysql.jdbc.Driver", MySqlSafeString.class),
-    ORACLE("oracle.jdbc.OracleDriver", DefaultSafeString.class),
-    POSTGRE("org.postgresql.Driver", DefaultSafeString.class),
-    H2("org.h2.Driver", DefaultSafeString.class),
-    DB2("com.ibm.db2.jcc.DB2Driver", DefaultSafeString.class),
-    MSSQL("com.microsoft.sqlserver.jdbc.SQLServerDriver", DefaultSafeString.class),
-    SQLITE("org.sqlite.JDBC", DefaultSafeString.class),
-    CASSANDRA("org.apache.cassandra.cql.jdbc.CassandraDriver", DefaultSafeString.class),
-    DEFAULT("", DefaultSafeString.class);
+    MYSQL("com.mysql.jdbc.Driver", "MySQL", MySqlSafeString.class),
+    ORACLE("oracle.jdbc.OracleDriver", "Oracle", DefaultSafeString.class),
+    POSTGRE("org.postgresql.Driver", "PostgreSQL", DefaultSafeString.class),
+    H2("org.h2.Driver", "H2", DefaultSafeString.class),
+    DB2("com.ibm.db2.jcc.DB2Driver", "Db2", DefaultSafeString.class),
+    MSSQL("com.microsoft.sqlserver.jdbc.SQLServerDriver", "SQLServer", DefaultSafeString.class),
+    SQLITE("org.sqlite.JDBC", "SQLite", DefaultSafeString.class),
+    CASSANDRA("org.apache.cassandra.cql.jdbc.CassandraDriver", "Cassandra", DefaultSafeString.class),
+    DEFAULT("", "", DefaultSafeString.class);
 
-    private final String driverName;
+    private final String driverClass;
+    private final String databaseName;
     private final Class mixed;
 
-    DatabaseType(String driverName, Class mixed) {
-        this.driverName = driverName;
+    DatabaseType(String driverClass, String databaseName, Class mixed) {
+        this.driverClass = driverClass;
+        this.databaseName = databaseName;
         this.mixed = mixed;
     }
 
-    public static DatabaseType of(String driverName) {
+    public static DatabaseType of(String databaseName) {
         return Arrays.stream(values())
-                .filter(type -> type.driverName.equals(driverName))
+                .filter(type -> type.databaseName.equalsIgnoreCase(databaseName))
                 .findFirst()
                 .orElse(DEFAULT);
     }
