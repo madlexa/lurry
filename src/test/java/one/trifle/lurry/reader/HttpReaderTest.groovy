@@ -15,11 +15,11 @@ class HttpReaderTest {
 
     @Test(expected = NullPointerException)
     void emptyElement() {
-        new HttpReader([null] as URL[])
+        new HttpReader([null] as URL[]).iterator()
     }
 
     @Test(expected = LurryPermissionException)
     void permissionElement() {
-        new HttpReader([new URL("http://localhost:1")] as URL[])
+        new HttpReader([new URL("http://localhost:1")] as URL[]).iterator()
     }
 }

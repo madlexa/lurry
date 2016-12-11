@@ -15,11 +15,11 @@ class FileReaderTest {
 
     @Test(expected = NullPointerException)
     void emptyElement() {
-        new FileReader([null] as File[])
+        new FileReader([null] as File[]).iterator()
     }
 
     @Test(expected = LurryPermissionException)
     void permissionElement() {
-        new FileReader([new File("")] as File[])
+        new FileReader([new File("")] as File[]).iterator()
     }
 }

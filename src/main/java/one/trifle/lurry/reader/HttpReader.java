@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -33,25 +34,28 @@ import java.util.Iterator;
 public class HttpReader implements Reader {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpReader.class);
 
-    private final InputStream[] streams;
+    private final URL[] urls;
 
     public HttpReader(URL... urls) {
-        LOGGER.debug("start read '{}' urls", urls.length);
-        int size = urls.length;
-        streams = new InputStream[size];
-        for (int i = 0; i < size; i++) {
-            try {
-                LOGGER.debug("start read url [{}]", urls[i].getFile());
-                streams[i] = urls[i].openStream();
-            } catch (IOException exc) {
-                LOGGER.error("url not read [{}]", urls[i].getFile(), exc);
-                throw new LurryPermissionException("url not read [" + urls[i].getFile() + "]", exc);
-            }
-        }
+        this.urls = urls;
     }
 
     @Override
     public Iterator<InputStream> iterator() {
-        return new ArrayIterator<>(streams);
+        return new ArrayIterator<>(
+                Arrays.stream(urls)
+                        .map(this::toInputStream)
+                        .toArray(InputStream[]::new)
+        );
+    }
+
+    private InputStream toInputStream(URL url) {
+        try {
+            LOGGER.debug("start read url [{}]", url.getFile());
+            return url.openStream();
+        } catch (IOException exc) {
+            LOGGER.error("url not read [{}]", url.getFile(), exc);
+            throw new LurryPermissionException("url not read [" + url.getFile() + "]", exc);
+        }
     }
 }

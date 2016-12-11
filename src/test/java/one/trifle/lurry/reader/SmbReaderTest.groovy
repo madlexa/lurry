@@ -15,11 +15,11 @@ class SmbReaderTest {
 
     @Test(expected = LurryPermissionException)
     void emptyElement() {
-        new SmbReader("login", "password", [null] as String[])
+        new SmbReader("login", "password", [null] as String[]).iterator()
     }
 
     @Test(expected = LurryPermissionException)
     void permissionElement() {
-        new SmbReader("login", "password", ["test"] as String[])
+        new SmbReader("login", "password", ["test"] as String[]).iterator()
     }
 }

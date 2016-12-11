@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -34,25 +35,28 @@ import java.util.Iterator;
 public class FileReader implements Reader {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReader.class);
 
-    private final InputStream[] streams;
+    private final File[] files;
 
     public FileReader(File... files) {
-        LOGGER.debug("start read '{}' files", files.length);
-        int size = files.length;
-        streams = new InputStream[size];
-        for (int i = 0; i < size; i++) {
-            try {
-                LOGGER.debug("start read file [{}]", files[i].getName());
-                streams[i] = new FileInputStream(files[i]);
-            } catch (FileNotFoundException exc) {
-                LOGGER.error("file not found [{}]", files[i].getName(), exc);
-                throw new LurryPermissionException("file not found [" + files[i].getName() + "]", exc);
-            }
-        }
+        this.files = files;
     }
 
     @Override
     public Iterator<InputStream> iterator() {
-        return new ArrayIterator<>(streams);
+        return new ArrayIterator<>(
+                Arrays.stream(files)
+                        .map(this::toInputStream)
+                        .toArray(InputStream[]::new)
+        );
+    }
+
+    private InputStream toInputStream(File file) {
+        try {
+            LOGGER.debug("start read file [{}]", file.getName());
+            return new FileInputStream(file);
+        } catch (FileNotFoundException exc) {
+            LOGGER.error("file not found [{}]", file.getName(), exc);
+            throw new LurryPermissionException("file not found [" + file.getName() + "]", exc);
+        }
     }
 }
