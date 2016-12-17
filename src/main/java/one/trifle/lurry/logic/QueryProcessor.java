@@ -31,6 +31,7 @@ import javax.sql.DataSource;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,10 +66,19 @@ public class QueryProcessor {
     private Class getMixed() {
         if (type == null) {
             try (Connection conn = source.getConnection()) {
-                type = DatabaseType.of(conn.getMetaData().getDatabaseProductName());
+                if (conn == null) {
+                    LOGGER.error("connection empty");
+                    throw new LurrySqlException("connection empty", null);
+                }
+                DatabaseMetaData metaData = conn.getMetaData();
+                if (metaData == null) {
+                    LOGGER.error("metaData empty");
+                    throw new LurrySqlException("metaData empty", null);
+                }
+                type = DatabaseType.of(metaData.getDatabaseProductName());
             } catch (SQLException exc) {
                 LOGGER.error("get resource type error", exc);
-                return DatabaseType.DEFAULT.getMixed();
+                throw new LurrySqlException("get resource type error", exc);
             }
         }
         return type.getMixed();

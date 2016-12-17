@@ -9,11 +9,13 @@ import one.trifle.lurry.model.Entity
 import one.trifle.lurry.model.Query
 import one.trifle.lurry.parser.Parser
 import one.trifle.lurry.reader.Reader
+import org.junit.Before
 import org.junit.Test
 
 import javax.sql.DataSource
 
 import java.sql.Connection
+import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
@@ -32,6 +34,18 @@ class GQueryTemplateTest {
     private Reader reader = mock(Reader)
     private Parser parser = mock(Parser)
     private DataSource source = mock(DataSource)
+    private Connection conn = mock(Connection)
+    private Statement stmt = mock(Statement)
+    private ResultSet rs = mock(ResultSet)
+
+    @Before
+    void init() {
+        DatabaseMetaData metaData = mock(DatabaseMetaData);
+
+        when(source.getConnection()).thenReturn(conn)
+        when(conn.getMetaData()).thenReturn(metaData)
+        when(metaData.getDatabaseProductName()).thenReturn("PostgreSQL")
+    }
 
     @Test
     void simple() {
@@ -83,10 +97,6 @@ class GQueryTemplateTest {
 
     @Test
     void simpleQueryList() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-        ResultSet rs = mock(ResultSet)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("get", "SELECT * from persons WHERE id = \$id")] as Query[]),
@@ -118,9 +128,6 @@ class GQueryTemplateTest {
 
     @Test(expected = LurrySqlException)
     void errorQueryList() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-        ResultSet rs = mock(ResultSet)
         RowMapper mapper = mock(RowMapper)
 
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
@@ -140,10 +147,6 @@ class GQueryTemplateTest {
 
     @Test
     void defaultMapperQueryList() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-        ResultSet rs = mock(ResultSet)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("get", "SELECT * from persons WHERE id = \$id")] as Query[]),
@@ -168,10 +171,6 @@ class GQueryTemplateTest {
 
     @Test
     void defaultMapMapperQueryList() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-        ResultSet rs = mock(ResultSet)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("get", "SELECT * from persons WHERE id = \$id")] as Query[]),
@@ -196,10 +195,6 @@ class GQueryTemplateTest {
 
     @Test
     void insert() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-        ResultSet rs = mock(ResultSet)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("insert", "INSERT INTO persons (name) VALUES(\${name.escape()})")] as Query[]),
@@ -225,9 +220,6 @@ class GQueryTemplateTest {
 
     @Test
     void noInsert() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("insert", "INSERT INTO persons (name) VALUES(\${name.escape()})")] as Query[]),
@@ -251,10 +243,6 @@ class GQueryTemplateTest {
 
     @Test
     void errInsert() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-        ResultSet rs = mock(ResultSet)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("insert", "INSERT INTO persons (name) VALUES(\${name.escape()})")] as Query[]),
@@ -281,9 +269,6 @@ class GQueryTemplateTest {
 
     @Test
     void exceptionInsert() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("insert", "INSERT INTO persons (name) VALUES(\${name.escape()})")] as Query[]),
@@ -298,7 +283,7 @@ class GQueryTemplateTest {
         try {
             template.insert(Person, "insert", [name: "Tester"] as Map<String, Object>)
             throw new AssertionFailedError()
-        } catch (LurrySqlException exc) {
+        } catch (LurrySqlException ignore) {
             verify(stmt, times(1)).executeUpdate(eq("INSERT INTO persons (name) VALUES('Tester')"))
             verify(conn, atLeast(1)).close()
             verify(stmt, atLeast(1)).close()
@@ -307,9 +292,6 @@ class GQueryTemplateTest {
 
     @Test
     void update() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("update", "UPDATE persons SET name = \${name.escape()} WHERE id = \$id")] as Query[]),
@@ -331,9 +313,6 @@ class GQueryTemplateTest {
 
     @Test
     void errUpdate() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("update", "UPDATE persons SET name = \${name.escape()} WHERE id = \$id")] as Query[]),
@@ -357,9 +336,6 @@ class GQueryTemplateTest {
 
     @Test
     void delete() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("delete", "DELETE FROM persons WHERE name = \${name.escape()}")] as Query[]),
@@ -381,9 +357,6 @@ class GQueryTemplateTest {
 
     @Test
     void errDelete() {
-        Connection conn = mock(Connection)
-        Statement stmt = mock(Statement)
-
         when(reader.iterator()).thenReturn([mock(InputStream)].iterator())
         when(parser.parse(any(InputStream))).thenReturn([
                 new Entity(Person, [new Query("delete", "DELETE FROM persons WHERE name = \${name.escape()}")] as Query[]),
