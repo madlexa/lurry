@@ -40,10 +40,10 @@ class QueryProcessorTest extends Specification {
         'bla <% out << t1 %> ${t2} bla'                 | [t1: 1, t2: 2]                         | ""           || "bla 1 2 bla"
         'ID IN (<% out << (ids.join(",")) %>)'          | [ids: [1, 2, 3]]                       | ""           || "ID IN (1,2,3)"
         'ID IN (${ids.collect{"\'$it\'"}.join(\',\')})' | [ids: ["1", "2", "3"]]                 | ""           || "ID IN ('1','2','3')"
-        "a = '\$a' AND b = '\$b'"                       | [a: "a"]                               | ""           || "a = 'a' AND b = 'null'"
-        "a = \${a.escape()} AND b = '\$b'"              | [a: "'a\\'"]                           | ""           || "a = '''a\\''' AND b = 'null'"
-        'a = ${a.escape()}'                             | [a: 'a']                               | ""           || "a = 'a'"
-        'a in (${a.join()})'                            | [a: [1, 2, 3, 0.7] as Number[]]        | ""           || "a in (1,2,3,0.7)"
+        "a = '\$a' AND b = '\$b'"           | [a: "a"]                               | ""           || "a = 'a' AND b = 'null'"
+        "a = \${a.escape()} AND b = '\$b'"  | [a: "'a\\'"]                           | ""           || "a = '''a\\''' AND b = 'null'"
+        'a = ${a.escape()}'                 | [a: 'a']                               | ""           || "a = 'a'"
+        'a in (${a.join()})'                | [a: [1, 2, 3, 0.7] as Number[]]        | ""           || "a in (1,2,3,0.7)"
         'a in (${a.join()})'                | [a: ['1', "\\'2\\'", '3'] as String[]] | "PostgreSQL" || "a in ('1','\\''2\\''','3')"
 
         "a = \${a.escape()} AND b = '\$b'"  | [a: "'a\\'"]                           | "MySQL"      || "a = '''a\\\\''' AND b = 'null'"
@@ -61,9 +61,29 @@ class QueryProcessorTest extends Specification {
         thrown(LurryIllegalArgumentException)
 //-----------------
         when:
-        DatabaseMetaData metaData = mock(DatabaseMetaData)
-        Connection connection = mock(Connection)
         DataSource source = mock(DataSource)
+
+        when(source.getConnection()).thenReturn(null)
+
+        new QueryProcessor(source).prepare(new Query("test", "bla \${"), [:] as Map<String, Object>)
+
+        then:
+        thrown(LurrySqlException)
+//-----------------
+        when:
+        source = mock(DataSource)
+        Connection connection = mock(Connection)
+
+        when(source.getConnection()).thenReturn(connection)
+        when(connection.getMetaData()).thenReturn(null)
+
+        new QueryProcessor(source).prepare(new Query("test", "bla \${"), [:] as Map<String, Object>)
+
+        then:
+        thrown(LurrySqlException)
+//-----------------
+        when:
+        DatabaseMetaData metaData = mock(DatabaseMetaData)
 
         when(source.getConnection()).thenReturn(connection)
         when(connection.getMetaData()).thenReturn(metaData)
