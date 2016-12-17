@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 import junit.framework.AssertionFailedError
 import one.trifle.lurry.exception.LurryQueryException
 import one.trifle.lurry.exception.LurrySqlException
-import one.trifle.lurry.mapper.RowMapper
+import one.trifle.lurry.mapper.custom.RowMapper
 import one.trifle.lurry.model.Entity
 import one.trifle.lurry.model.Query
 import one.trifle.lurry.parser.Parser

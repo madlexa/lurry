@@ -1,4 +1,4 @@
-package one.trifle.lurry.mapper
+package one.trifle.lurry.mapper.custom
 
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData

@@ -1,4 +1,4 @@
-package one.trifle.lurry.mapper;
+package one.trifle.lurry.mapper.custom;
 
 import one.trifle.lurry.exception.LurrySqlException;
 import org.slf4j.Logger;

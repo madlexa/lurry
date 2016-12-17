@@ -18,9 +18,9 @@ package one.trifle.lurry;
 import one.trifle.lurry.exception.LurryQueryException;
 import one.trifle.lurry.exception.LurrySqlException;
 import one.trifle.lurry.logic.QueryProcessor;
-import one.trifle.lurry.mapper.DefaultMapRowMapper;
-import one.trifle.lurry.mapper.DefaultRowMapper;
-import one.trifle.lurry.mapper.RowMapper;
+import one.trifle.lurry.mapper.custom.DefaultMapRowMapper;
+import one.trifle.lurry.mapper.custom.DefaultRowMapper;
+import one.trifle.lurry.mapper.custom.RowMapper;
 import one.trifle.lurry.model.Entity;
 import one.trifle.lurry.model.Query;
 import one.trifle.lurry.parser.Parser;
@@ -48,6 +48,7 @@ import java.util.Map;
 public class GQueryTemplate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GQueryTemplate.class);
+
     private final Reader reader;
     private final Parser parser;
     private final DataSource source;

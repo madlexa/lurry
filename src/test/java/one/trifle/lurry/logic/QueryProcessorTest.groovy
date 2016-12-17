@@ -1,5 +1,7 @@
 package one.trifle.lurry.logic
 
+import one.trifle.lurry.exception.LurryIllegalArgumentException
+import one.trifle.lurry.exception.LurrySqlException
 import one.trifle.lurry.model.Query
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -8,6 +10,7 @@ import javax.sql.DataSource
 
 import java.sql.Connection
 import java.sql.DatabaseMetaData
+import java.sql.SQLException
 
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
@@ -41,11 +44,42 @@ class QueryProcessorTest extends Specification {
         "a = \${a.escape()} AND b = '\$b'"              | [a: "'a\\'"]                           | ""           || "a = '''a\\''' AND b = 'null'"
         'a = ${a.escape()}'                             | [a: 'a']                               | ""           || "a = 'a'"
         'a in (${a.join()})'                            | [a: [1, 2, 3, 0.7] as Number[]]        | ""           || "a in (1,2,3,0.7)"
-        'a in (${a.join()})'                            | [a: ['1', "\\'2\\'", '3'] as String[]] | "PostgreSQL" || "a in ('1','\\''2\\''','3')"
+        'a in (${a.join()})'                | [a: ['1', "\\'2\\'", '3'] as String[]] | "PostgreSQL" || "a in ('1','\\''2\\''','3')"
 
-        "a = \${a.escape()} AND b = '\$b'"              | [a: "'a\\'"]                           | "MySQL"      || "a = '''a\\\\''' AND b = 'null'"
-        'a in (${a.join()})'                            | [a: [1, 2, 3] as Number[]]             | "MySQL"      || "a in (1,2,3)"
-        'a in (${a.join()})'                            | [a: ['1', "\\'2\\'", '3'] as String[]] | "MySQL"      || "a in ('1','\\\\''2\\\\''','3')"
+        "a = \${a.escape()} AND b = '\$b'"  | [a: "'a\\'"]                           | "MySQL"      || "a = '''a\\\\''' AND b = 'null'"
+        'a in (${a.join()})'                | [a: [1, 2, 3] as Number[]]             | "MySQL"      || "a in (1,2,3)"
+        'a in (${a.join()})'                | [a: ['1', "\\'2\\'", '3'] as String[]] | "MySQL"      || "a in ('1','\\\\''2\\\\''','3')"
+        '${String.valueOf(" ").hashCode()}' | [:]                                    | "MySQL"      || "32"
+    }
 
+    @Unroll
+    "some error"() {
+        when:
+        new QueryProcessor(null)
+
+        then:
+        thrown(LurryIllegalArgumentException)
+//-----------------
+        when:
+        DatabaseMetaData metaData = mock(DatabaseMetaData)
+        Connection connection = mock(Connection)
+        DataSource source = mock(DataSource)
+
+        when(source.getConnection()).thenReturn(connection)
+        when(connection.getMetaData()).thenReturn(metaData)
+        when(metaData.getDatabaseProductName()).thenReturn("PostgreSQL")
+
+        new QueryProcessor(source).prepare(new Query("test", "bla \${"), [:] as Map<String, Object>)
+
+        then:
+        thrown(LurrySqlException)
+//-----------------
+        when:
+        when(source.getConnection()).thenThrow(SQLException)
+
+        new QueryProcessor(source).prepare(new Query("test", "bla \${"), [:] as Map<String, Object>)
+
+        then:
+        thrown(LurrySqlException)
     }
 }

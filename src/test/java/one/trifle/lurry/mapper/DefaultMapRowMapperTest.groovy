@@ -1,6 +1,7 @@
 package one.trifle.lurry.mapper
 
 import one.trifle.lurry.exception.LurrySqlException
+import one.trifle.lurry.mapper.custom.DefaultMapRowMapper
 import org.junit.Test
 
 import java.sql.ResultSet

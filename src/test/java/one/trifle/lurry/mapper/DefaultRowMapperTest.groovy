@@ -1,5 +1,7 @@
 package one.trifle.lurry.mapper
 
+import one.trifle.lurry.mapper.custom.DefaultRowMapper
+import one.trifle.lurry.mapper.custom.RowMapper
 import org.junit.Test
 
 import java.sql.ResultSet
