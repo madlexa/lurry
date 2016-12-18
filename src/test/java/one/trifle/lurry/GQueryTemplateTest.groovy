@@ -40,7 +40,7 @@ class GQueryTemplateTest {
 
     @Before
     void init() {
-        DatabaseMetaData metaData = mock(DatabaseMetaData);
+        DatabaseMetaData metaData = mock(DatabaseMetaData)
 
         when(source.getConnection()).thenReturn(conn)
         when(conn.getMetaData()).thenReturn(metaData)
@@ -161,7 +161,7 @@ class GQueryTemplateTest {
         try {
             template.queryList(Person, "get", [id: 7] as Map<String, Object>)
             throw new AssertionFailedError()
-        } catch (LurrySqlException exc) {
+        } catch (LurrySqlException ignore) {
             verify(stmt, times(1)).executeQuery(eq("SELECT * from persons WHERE id = 7"))
             verify(conn, atLeast(1)).close()
             verify(stmt, atLeast(1)).close()
@@ -185,7 +185,7 @@ class GQueryTemplateTest {
         try {
             template.queryMap(Person, "get", [id: 7] as Map<String, Object>)
             throw new AssertionFailedError()
-        } catch (LurrySqlException exc) {
+        } catch (LurrySqlException ignore) {
             verify(stmt, times(1)).executeQuery(eq("SELECT * from persons WHERE id = 7"))
             verify(conn, atLeast(1)).close()
             verify(stmt, atLeast(1)).close()
@@ -234,7 +234,7 @@ class GQueryTemplateTest {
         try {
             template.insert(Person, "insert", [name: "Tester"] as Map<String, Object>)
             throw new AssertionFailedError()
-        } catch (LurrySqlException exc) {
+        } catch (LurrySqlException ignore) {
             verify(stmt, times(1)).executeUpdate(eq("INSERT INTO persons (name) VALUES('Tester')"))
             verify(conn, atLeast(1)).close()
             verify(stmt, atLeast(1)).close()
@@ -259,7 +259,7 @@ class GQueryTemplateTest {
         try {
             template.insert(Person, "insert", [name: "Tester"] as Map<String, Object>)
             throw new AssertionFailedError()
-        } catch (LurrySqlException exc) {
+        } catch (LurrySqlException ignore) {
             verify(stmt, times(1)).executeUpdate(eq("INSERT INTO persons (name) VALUES('Tester')"))
             verify(conn, atLeast(1)).close()
             verify(stmt, atLeast(1)).close()
@@ -327,7 +327,7 @@ class GQueryTemplateTest {
         try {
             template.update(Person, "update", [name: "Tester", id: 3L] as Map<String, Object>)
             throw new AssertionFailedError()
-        } catch (LurrySqlException exc) {
+        } catch (LurrySqlException ignore) {
             verify(stmt, times(1)).executeUpdate(eq("UPDATE persons SET name = 'Tester' WHERE id = 3"))
             verify(conn, atLeast(1)).close()
             verify(stmt, atLeast(1)).close()
@@ -371,7 +371,7 @@ class GQueryTemplateTest {
         try {
             template.delete(Person, "delete", [name: "Tester"] as Map<String, Object>)
             throw new AssertionFailedError()
-        } catch (LurrySqlException exc) {
+        } catch (LurrySqlException ignore) {
             verify(stmt, times(1)).executeUpdate(eq("DELETE FROM persons WHERE name = 'Tester'"))
             verify(conn, atLeast(1)).close()
             verify(stmt, atLeast(1)).close()

@@ -53,7 +53,7 @@ public class GQueryTemplate {
     private final Parser parser;
     private final DataSource source;
     private final QueryProcessor processor;
-    private Map<String, Query> cache = null;
+    private volatile Map<String, Query> cache = null;
 
     /**
      * recommend single QueryFactory for one DataSource
