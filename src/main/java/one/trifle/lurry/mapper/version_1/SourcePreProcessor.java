@@ -13,25 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry.mapper.version_1
+package one.trifle.lurry.mapper.version_1;
 
-import org.junit.Test
+import org.codehaus.groovy.control.ParserPlugin;
+import org.codehaus.groovy.control.ParserPluginFactory;
 
 /**
  * @author Aleksey Dobrynin
  */
-class LurryMapperCompilerTest {
-    @Test
-    void "simple unique"() {
-        String source = """
-main: "personId"
-contact: personID test.contactID
-data: dataID personID1 contactID"""
-
-        assert new LurryMapperCompiler(source, null, null).parse().unique == [
-                main   : ['"personId"'],
-                contact: ["personID", "test.contactID"],
-                data   : ["dataID", "personID1", "contactID"]
-        ]
+public class SourcePreProcessor extends ParserPluginFactory {
+    public ParserPlugin createParserPlugin() {
+        return new SourceModifierParserPlugin();
     }
 }

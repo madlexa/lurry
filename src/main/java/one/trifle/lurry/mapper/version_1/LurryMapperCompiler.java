@@ -15,11 +15,20 @@
  */
 package one.trifle.lurry.mapper.version_1;
 
+import groovy.lang.Binding;
+import groovy.lang.Closure;
 import groovy.lang.GroovyShell;
+import one.trifle.lurry.exception.LurrySqlException;
+import org.codehaus.groovy.control.CompilerConfiguration;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -27,27 +36,77 @@ import java.util.Map;
  * @author Aleksey Dobrynin
  */
 public class LurryMapperCompiler {
+    public static final String MAIN_OBJECT_KEY = "main";
+
     private String uniqueCode;
     private String mappingCode;
+    private String importCode;
 
-    public LurryMapperCompiler(String unique, String mapping) {
+    public LurryMapperCompiler(String unique, String mapping, String imports) {
         this.uniqueCode = unique;
         this.mappingCode = mapping;
+        this.importCode = imports;
     }
 
-    @SuppressWarnings("unchecked")
     public ObjectMapper parse() {
+        // TODO init unique object for
+        CompilerConfiguration conf = new CompilerConfiguration();
+        conf.setPluginFactory(new SourcePreProcessor());
+        GroovyShell shell = new GroovyShell(new Binding(), conf);
+
         return new ObjectMapper() {
-            private final Map<String, String> unique = (Map<String, String>) new GroovyShell().evaluate("[" + uniqueCode + "]");
+            @SuppressWarnings("unchecked")
+            private final Map<String, List<String>> unique = (Map<String, List<String>>) shell.evaluate(uniqueCode);
+            private final Map<String, Set<String>> uniqueHash = new HashMap<>();
+            private final Map<String, Closure<Object>> mapping = new HashMap<>(); // TODO init new GroovyShell().evaluate("[" + mappingCode + "]");
+            private final Map<String, Map<String, Object>> objs = new HashMap<>();
+
+            {
+//                ImportCustomizer importCustomizer = new ImportCustomizer();
+//                importCustomizer.addImport("", "");
+//                CompilerConfiguration configuration = new CompilerConfiguration();
+//                configuration.addCompilationCustomizers(importCustomizer);
+//                new GroovyShell(configuration).
+
+//                new AstBuilder().buildFromSpec()
+                for (Map.Entry<String, List<String>> entry : unique.entrySet()) {
+                    uniqueHash.put(entry.getKey(), new HashSet<>());
+                    objs.put(entry.getKey(), new HashMap<>());
+                }
+            }
 
             @Override
             public void mapRow(ResultSet rs, int rowNum) {
+                Map<String, Object> data = new HashMap<>();
+                for (Map.Entry<String, List<String>> entry : unique.entrySet()) { // init all objects from row
+                    String hash = getHash(rs, entry.getValue());
+                    if (!uniqueHash.get(entry.getKey()).contains(hash)) { // check unique object, if not init, then start init
+                        Object obj = mapping.get(entry.getKey()).call(rs, data); // init entity object
+                        objs.get(entry.getKey()).put(hash, obj); // cache object
+                        data.put(entry.getKey(), obj); // add object for init other objects this row
 
+                        uniqueHash.get(entry.getKey()).add(hash); // cache hash
+                    } else {
+                        data.put(entry.getKey(), objs.get(entry.getKey()).get(hash)); // add row cache
+                    }
+                }
             }
 
             @Override
             public List result() {
-                return null;
+                return objs.get(MAIN_OBJECT_KEY).entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
+            }
+
+            private String getHash(ResultSet data, List<String> fields) {
+                return fields.stream().map(field -> getRowField(data, field)).collect(Collectors.joining(","));
+            }
+
+            private String getRowField(ResultSet data, String field) {
+                try {
+                    return String.valueOf(data.getObject(field));
+                } catch (SQLException exc) {
+                    throw new LurrySqlException("get field = '" + field + "' error", exc);
+                }
             }
         };
     }
