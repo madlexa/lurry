@@ -29,16 +29,17 @@ import java.io.StringReader;
  * @author Aleksey Dobrynin
  */
 public class SourceModifierParserPlugin extends AntlrParserPlugin {
+    @Override
     public Reduction parseCST(SourceUnit sourceUnit, Reader reader) throws CompilationFailedException {
         try {
-            String text = modifyTextSource(reader);
+            String text = modify(reader);
             return super.parseCST(sourceUnit, new StringReader(text));
         } catch (IOException exc) {
             throw new LurryIllegalArgumentException("parse unique error", exc);
         }
     }
 
-    String modifyTextSource(Reader source) throws IOException {
+    private String modify(Reader source) throws IOException {
         StringBuilder text = new StringBuilder();
         StringBuilder token = new StringBuilder();
         Token last = Token.NONE;
