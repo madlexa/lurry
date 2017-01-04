@@ -22,16 +22,73 @@ import org.junit.Test
  */
 class LurryMapperCompilerTest {
     @Test
-    void "simple unique"() {
+    void "simple"() {
         String source = """
-main: "personId"
-contact: personID test.contactID
-data: dataID personID1 contactID"""
+main: personID
+contact: personID
+"""
 
         assert new LurryMapperCompiler(source, null, null).parse().unique == [
-                main   : ['"personId"'],
-                contact: ["personID", "test.contactID"],
-                data   : ["dataID", "personID1", "contactID"]
+                main   : ['personID'],
+                contact: ["personID"]
+        ]
+    }
+
+    @Test
+    void "array"() {
+        String source = """
+main: personID
+contact: personID contactID
+"""
+
+        assert new LurryMapperCompiler(source, null, null).parse().unique == [
+                main   : ['personID'],
+                contact: ["personID", "contactID"]
+        ]
+    }
+
+    @Test
+    void "quote"() {
+        String source = """
+main: "person id"
+"contact name": "data:1" "data:2"
+"""
+
+        assert new LurryMapperCompiler(source, null, null).parse().unique == [
+                main          : ['person id'],
+                "contact name": ['data:1', 'data:2']
+        ]
+    }
+
+    @Test
+    void "without spaces"() {
+        String source = 'main:personID "contact name":"data:1" "data:2"'
+
+        assert new LurryMapperCompiler(source, null, null).parse().unique == [
+                main          : ['personID'],
+                "contact name": ['data:1', 'data:2']
+        ]
+    }
+
+
+    @Test
+    void "many spaces"() {
+        String source = """
+
+  main : "person id"
+contact: personID       test.contactID
+"my data:": dataID 
+
+personID1 
+    1 
+    contactID
+
+"""
+
+        assert new LurryMapperCompiler(source, null, null).parse().unique == [
+                main      : ['person id'],
+                contact   : ["personID", "test.contactID"],
+                "my data:": ["dataID", "personID1", "1", "contactID"]
         ]
     }
 }

@@ -24,67 +24,97 @@ import org.codehaus.groovy.syntax.Reduction;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Aleksey Dobrynin
  */
-public class SourceModifierParserPlugin extends AntlrParserPlugin {
+class SourceModifierParserPlugin extends AntlrParserPlugin {
     @Override
     public Reduction parseCST(SourceUnit sourceUnit, Reader reader) throws CompilationFailedException {
         try {
-            String text = modify(reader);
+            String text = build(parse(reader));
             return super.parseCST(sourceUnit, new StringReader(text));
         } catch (IOException exc) {
             throw new LurryIllegalArgumentException("parse unique error", exc);
         }
     }
 
-    private String modify(Reader source) throws IOException {
-        StringBuilder text = new StringBuilder();
+    private List<Node> parse(Reader source) throws IOException {
+        List<Node> nodes = new ArrayList<>();
         StringBuilder token = new StringBuilder();
-        Token last = Token.NONE;
+        boolean isString = false;
         int chr;
         while ((chr = source.read()) != -1) {
-            if (chr == ':') {
-                if (last == Token.NONE) {
-                    text.append('[');
-                } else {
-                    text.append(']').append(',');
-                }
-                text.append(token).append(':').append('[');
-                token.setLength(0);
-                last = Token.KEY;
-                continue;
-            }
-
-            if (chr == ' ' || chr == '\n' || chr == '\t') {
+            // key token
+            if (!isString && chr == ':') {
                 if (token.length() > 0) {
-                    if (last == Token.VALUE) {
-                        text.append(',');
-                    }
-                    text.append('"').append(token).append('"');
+                    nodes.add(new Node(Token.KEY, token.toString()));
                     token.setLength(0);
-                    last = Token.VALUE;
+                } else {
+                    nodes.get(nodes.size() - 1).token = Token.KEY;
                 }
                 continue;
             }
 
-            if (chr == '"' || chr == '\\') {
-                token.append('\\');
+            // next token
+            if (!isString && Character.isWhitespace(chr)) {
+                if (token.length() > 0) {
+                    nodes.add(new Node(Token.VALUE, token.toString()));
+                    token.setLength(0);
+                }
+                continue;
             }
+
+            if (chr == '"') {
+                isString = !isString;
+                continue;
+            }
+
+            //build token
             token.append((char) chr);
         }
+        // add last token
         if (token.length() > 0) {
-            if (last == Token.VALUE) {
-                text.append(',');
-            }
-            text.append('"').append(token).append('"');
+            nodes.add(new Node(Token.VALUE, token.toString()));
         }
-        text.append(']').append(']');
-        return text.toString();
+        return nodes;
     }
 
-    enum Token {
-        KEY, VALUE, NONE
+    private String build(List<Node> nodes) {
+        StringBuilder result = new StringBuilder().append('[').append('\n');
+        int nodesSize = nodes.size();
+        for (int i = 0; i < nodesSize; i++) {
+            if (nodes.get(i).token == Token.KEY) {
+                result.append('\t').append('"').append(nodes.get(i).value).append('"').append('\t').append(':').append(' ').append('[');
+            } else if (nodes.get(i).token == Token.VALUE) {
+                result.append('"').append(nodes.get(i).value).append('"');
+                if (i + 1 < nodesSize) {
+                    if (nodes.get(i + 1).token == Token.VALUE) {
+                        result.append(',');
+                    } else {
+                        result.append(']').append(',').append('\n');
+                    }
+                } else {
+                    result.append(']');
+                }
+            }
+        }
+        return result.append('\n').append(']').toString();
+    }
+
+    private enum Token {
+        KEY, VALUE
+    }
+
+    private static class Node {
+        private final String value;
+        private Token token;
+
+        Node(Token token, String value) {
+            this.token = token;
+            this.value = value;
+        }
     }
 }
