@@ -21,9 +21,9 @@ import org.codehaus.groovy.control.ParserPluginFactory;
 /**
  * @author Aleksey Dobrynin
  */
-class SourcePreProcessor extends ParserPluginFactory {
+class SourceUniquePreProcessor extends ParserPluginFactory {
     @Override
     public ParserPlugin createParserPlugin() {
-        return new SourceModifierParserPlugin();
+        return new SourceModifierUniqueParserPlugin();
     }
 }

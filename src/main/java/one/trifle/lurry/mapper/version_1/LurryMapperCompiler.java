@@ -51,7 +51,7 @@ public class LurryMapperCompiler {
     public ObjectMapper parse() {
         // TODO init unique object for
         CompilerConfiguration conf = new CompilerConfiguration();
-        conf.setPluginFactory(new SourcePreProcessor());
+        conf.setPluginFactory(new SourceUniquePreProcessor());
         GroovyShell shell = new GroovyShell(new Binding(), conf);
 
         return new ObjectMapper() {

@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * @author Aleksey Dobrynin
  */
-class SourceModifierParserPlugin extends AntlrParserPlugin {
+class SourceModifierUniqueParserPlugin extends AntlrParserPlugin {
     @Override
     public Reduction parseCST(SourceUnit sourceUnit, Reader reader) throws CompilationFailedException {
         try {
