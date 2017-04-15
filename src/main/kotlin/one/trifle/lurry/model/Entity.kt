@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry.exception;
+package one.trifle.lurry.model
 
 /**
- * Specific lurry exception for resource permission error
+ * Larry format for aggregate queries by entity
  *
  * @author Aleksey Dobrynin
  */
-public class LurryPermissionException extends LurryException {
-    public LurryPermissionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
+data class Entity(val name: Class<*>, var queries: Array<Query> = emptyArray())

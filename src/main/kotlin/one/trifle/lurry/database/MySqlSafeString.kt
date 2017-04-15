@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Aleksey Dobrynin
+ * Copyright 2017 Aleksey Dobrynin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,52 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry.database;
-
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Collectors;
+package one.trifle.lurry.database
 
 /**
  * Specific mixed class for MySql special for inject in query template methods
- *
+
  * @author Aleksey Dobrynin
  */
-public class MySqlSafeString extends DefaultSafeString {
+object MySqlSafeString {
     /**
      * escape special characters to remove sql injection
      * replace ' -&gt; '', \ -&gt; \\ and quote string
-     *
+
      * @param str sql string
+     * *
      * @return escaping string
      */
-    public static String escape(String str) {
+    @JvmStatic fun escape(str: String?): String? {
         if (str == null) {
-            return null;
+            return null
         }
-        StringBuilder to = new StringBuilder("'");
-        for (char symbol : str.toCharArray()) {
+        val to = StringBuilder("'")
+        for (symbol in str.toCharArray()) {
             if (symbol == '\'' || symbol == '\\') {
-                to.append(symbol);
+                to.append(symbol)
             }
-            to.append(symbol);
+            to.append(symbol)
         }
-        return to.append("'").toString();
+        return to.append("'").toString()
     }
 
     /**
      * method for inline string array in sql
      * this method quote and escape array elements
      * and remove null elements
-     * ["test1", "test2\", null, "'test3'"] -&gt; 'test1','test2\\','''test3'''
+     * ["test1", "test2", null, "'test3'"] -&gt; 'test1','test2','''test3'''
      *
      * @param list java array string
      * @return sql string
      */
-    public static String join(String[] list) {
-        return Arrays.stream(list)
-                .filter(Objects::nonNull)
-                .map(MySqlSafeString::escape)
-                .collect(Collectors.joining(","));
+    @JvmStatic fun join(list: Array<String?>): String = list
+            .filter { str -> str != null }
+            .map { str -> escape(str) }
+            .joinToString(",")
+
+    /**
+     * method for inline numbers array in sql
+     * this method without quote array elements and without escape
+     * and remove null elements
+     * [1, 2, null, 3, 4] -&gt; 1,2,3,4
+
+     * @param list java array number
+     * *
+     * @return sql string
+     */
+    @JvmStatic fun join(list: Array<Number?>): String {
+        return DefaultSafeString.join(list)
     }
 }

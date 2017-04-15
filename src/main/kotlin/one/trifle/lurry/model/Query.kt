@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry.exception;
+package one.trifle.lurry.model
+
+import one.trifle.lurry.mapper.LurryMapper
+import one.trifle.lurry.mapper.custom.DefaultRowMapper
 
 /**
- * Specific lurry exception for resource permission error
+ * Larry query information format
  *
  * @author Aleksey Dobrynin
  */
-public class LurryPermissionException extends LurryException {
-    public LurryPermissionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
+data class Query(val name: String,
+                 val sql: String,
+                 var mapper: Class<out LurryMapper> = DefaultRowMapper::class.java)

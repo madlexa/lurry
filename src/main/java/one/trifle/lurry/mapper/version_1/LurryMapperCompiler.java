@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Aleksey Dobrynin
+ * Copyright 2017 Aleksey Dobrynin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -52,7 +52,7 @@ public class LurryMapperCompiler {
         // TODO init unique object for
         CompilerConfiguration conf = new CompilerConfiguration();
         conf.setPluginFactory(new SourceUniquePreProcessor());
-        GroovyShell shell = new GroovyShell(new Binding(), conf);
+        final GroovyShell shell = new GroovyShell(new Binding(), conf);
 
         return new ObjectMapper() {
             @SuppressWarnings("unchecked")
@@ -70,8 +70,8 @@ public class LurryMapperCompiler {
 
 //                new AstBuilder().buildFromSpec()
                 for (Map.Entry<String, List<String>> entry : unique.entrySet()) {
-                    uniqueHash.put(entry.getKey(), new HashSet<>());
-                    objs.put(entry.getKey(), new HashMap<>());
+                    uniqueHash.put(entry.getKey(), new HashSet<String>());
+                    objs.put(entry.getKey(), new HashMap<String, Object>());
                 }
             }
 
@@ -94,11 +94,18 @@ public class LurryMapperCompiler {
 
             @Override
             public List result() {
-                return objs.get(MAIN_OBJECT_KEY).entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
+                return new ArrayList<>(objs.get(MAIN_OBJECT_KEY).values());
             }
 
             private String getHash(ResultSet data, List<String> fields) {
-                return fields.stream().map(field -> getRowField(data, field)).collect(Collectors.joining(","));
+                StringBuilder result = new StringBuilder();
+                for (String field : fields) {
+                    if (result.length() > 0) {
+                        result.append(",");
+                    }
+                    result.append(getRowField(data, field));
+                }
+                return result.toString();
             }
 
             private String getRowField(ResultSet data, String field) {

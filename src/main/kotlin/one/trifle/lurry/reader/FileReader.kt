@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry.exception;
+package one.trifle.lurry.reader
+
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 
 /**
- * Specific lurry exception for resource permission error
- *
+ * implementation `Reader` is used to read from Files
+
  * @author Aleksey Dobrynin
  */
-public class LurryPermissionException extends LurryException {
-    public LurryPermissionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+class FileReader(vararg val files: File) : Reader {
+    override fun iterator(): MutableIterator<InputStream> = files.map(::FileInputStream).iterator() as MutableIterator<InputStream>
 }

@@ -24,7 +24,7 @@ class MySqlSafeStringTest extends Specification {
     }
 
     @Unroll
-    "MySqlSafeString.join(#arr) == #result"() {
+    "MySqlSafeString.join(strings #arr) == #result"() {
         expect:
         MySqlSafeString.join(arr) == result
 
@@ -37,6 +37,15 @@ class MySqlSafeStringTest extends Specification {
         ["it's"] as String[]                             || "'it''s'"
         ["it\\'s"] as String[]                           || "'it\\\\''s'"
         ["test", null, "", "it's", "it\\'s"] as String[] || "'test','','it''s','it\\\\''s'"
+    }
+
+    @Unroll
+    "MySqlSafeString.join(numbers #arr) == #result"() {
+        expect:
+        MySqlSafeString.join(arr) == result
+
+        where:
+        arr                                              || result
         [1] as Number[]                                  || "1"
         [1, 2] as Number[]                               || "1,2"
         [1, null, 2] as Number[]                         || "1,2"

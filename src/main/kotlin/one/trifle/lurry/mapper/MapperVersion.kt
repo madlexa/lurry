@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry.exception;
+package one.trifle.lurry.mapper
 
 /**
- * Specific lurry exception for resource permission error
- *
  * @author Aleksey Dobrynin
  */
-public class LurryPermissionException extends LurryException {
-    public LurryPermissionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+enum class MapperVersion constructor(val version: String) {
+    DEFAULT("object"),
+    MAP("map"),
+    V1("1.0")
 }

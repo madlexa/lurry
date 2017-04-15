@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Aleksey Dobrynin
+ * Copyright 2017 Aleksey Dobrynin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package one.trifle.lurry.mapper.custom;
 
 import one.trifle.lurry.GQueryTemplate;
+import one.trifle.lurry.mapper.LurryMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +29,7 @@ import java.sql.SQLException;
  * @author Aleksey Dobrynin
  * @see GQueryTemplate
  */
-public interface RowMapper<T> {
+public interface RowMapper<T> extends LurryMapper {
 
     /**
      * Implementations must implement this method to map each row of data

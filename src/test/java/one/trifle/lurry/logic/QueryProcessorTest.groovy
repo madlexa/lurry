@@ -1,7 +1,7 @@
 package one.trifle.lurry.logic
 
-import one.trifle.lurry.exception.LurryIllegalArgumentException
 import one.trifle.lurry.exception.LurrySqlException
+import one.trifle.lurry.mapper.custom.DefaultRowMapper
 import one.trifle.lurry.model.Query
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -28,7 +28,7 @@ class QueryProcessorTest extends Specification {
         when(connection.getMetaData()).thenReturn(metaData)
         when(metaData.getDatabaseProductName()).thenReturn(driverName)
 
-        new QueryProcessor(source).prepare(new Query("test", template), params as Map<String, Object>) == result
+        new QueryProcessor(source).prepare(new Query("test", template, DefaultRowMapper.class), params as Map<String, Object>) == result
 
         where:
         template                                        | params                                 | driverName   || result
@@ -52,20 +52,24 @@ class QueryProcessorTest extends Specification {
         '${String.valueOf(" ").hashCode()}'             | [:]                                    | "MySQL"      || "32"
     }
 
+    static boolean isEmpty(String str) {
+        return str.isEmpty()
+    }
+
     @Unroll
     "some error"() {
         when:
         new QueryProcessor(null)
 
         then:
-        thrown(LurryIllegalArgumentException)
+        thrown(IllegalArgumentException)
 //-----------------
         when:
         DataSource source = mock(DataSource)
 
         when(source.getConnection()).thenReturn(null)
 
-        new QueryProcessor(source).prepare(new Query("test", "bla \${"), [:] as Map<String, Object>)
+        new QueryProcessor(source).prepare(new Query("test", "bla \${", DefaultRowMapper.class), [:] as Map<String, Object>)
 
         then:
         thrown(LurrySqlException)
@@ -77,7 +81,7 @@ class QueryProcessorTest extends Specification {
         when(source.getConnection()).thenReturn(connection)
         when(connection.getMetaData()).thenReturn(null)
 
-        new QueryProcessor(source).prepare(new Query("test", "bla \${"), [:] as Map<String, Object>)
+        new QueryProcessor(source).prepare(new Query("test", "bla \${", DefaultRowMapper.class), [:] as Map<String, Object>)
 
         then:
         thrown(LurrySqlException)
@@ -89,7 +93,7 @@ class QueryProcessorTest extends Specification {
         when(connection.getMetaData()).thenReturn(metaData)
         when(metaData.getDatabaseProductName()).thenReturn("PostgreSQL")
 
-        new QueryProcessor(source).prepare(new Query("test", "bla \${"), [:] as Map<String, Object>)
+        new QueryProcessor(source).prepare(new Query("test", "bla \${", DefaultRowMapper.class), [:] as Map<String, Object>)
 
         then:
         thrown(LurrySqlException)
@@ -97,7 +101,7 @@ class QueryProcessorTest extends Specification {
         when:
         when(source.getConnection()).thenThrow(SQLException)
 
-        new QueryProcessor(source).prepare(new Query("test", "bla \${"), [:] as Map<String, Object>)
+        new QueryProcessor(source).prepare(new Query("test", "bla \${", DefaultRowMapper.class), [:] as Map<String, Object>)
 
         then:
         thrown(LurrySqlException)
