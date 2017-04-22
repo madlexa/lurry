@@ -24,9 +24,9 @@ import java.sql.ResultSet
 
  * @author Aleksey Dobrynin
  */
-class DefaultMapRowMapper : RowMapper<Map<String, Any>> {
+class DefaultMapRowMapper : RowMapper<Map<String, *>> {
 
-    override fun mapRow(rs: ResultSet, rowNum: Int): Map<String, Any> {
+    override fun mapRow(rs: ResultSet): Map<String, *> {
         val metaData = rs.metaData
         return (1..metaData.columnCount)
                 .map { metaData.getColumnName(it) to rs.getObject(it) }

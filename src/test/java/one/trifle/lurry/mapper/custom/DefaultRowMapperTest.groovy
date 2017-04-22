@@ -28,7 +28,7 @@ class DefaultRowMapperTest {
         when(rs.getObject(eq(2))).thenReturn("test")
 
         RowMapper mapper = new DefaultRowMapper<Person>(Person)
-        Person person = mapper.mapRow(rs, 0)
+        Person person = mapper.mapRow(rs)
         assertEquals(7, person.id)
         assertEquals("test", person.name)
     }
@@ -48,7 +48,7 @@ class DefaultRowMapperTest {
         when(rs.getObject(eq(3))).thenReturn("fake")
 
         RowMapper mapper = new DefaultRowMapper<Person>(Person)
-        Person person = mapper.mapRow(rs, 0)
+        Person person = mapper.mapRow(rs)
         assertEquals(7, person.id)
         assertEquals("test", person.name)
     }
@@ -64,7 +64,7 @@ class DefaultRowMapperTest {
         when(rs.getObject(eq(1))).thenReturn("test")
 
         RowMapper mapper = new DefaultRowMapper<Person>(Person)
-        Person person = mapper.mapRow(rs, 0)
+        Person person = mapper.mapRow(rs)
         assertEquals(null, person.id)
         assertEquals("test", person.name)
     }
@@ -80,7 +80,7 @@ class DefaultRowMapperTest {
         when(rs.getObject(eq(1))).thenReturn("test")
 
         RowMapper mapper = new DefaultRowMapper<Person>(Person)
-        mapper.mapRow(rs, 0)
+        mapper.mapRow(rs)
     }
 
     static class Person {

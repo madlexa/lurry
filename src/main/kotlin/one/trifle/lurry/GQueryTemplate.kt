@@ -96,8 +96,8 @@ class GQueryTemplate(private val source: DataSource, reader: Reader, parser: Par
                     stmt.executeQuery(sql).use { rs ->
                         var position = 0
                         while (rs.next()) {
-                            LOGGER.trace("entity = '{}', query = '{}'\nmap: row #{}", entity, queryName, position)
-                            result.add(mapper.mapRow(rs, position++))
+                            LOGGER.trace("entity = '{}', query = '{}'\nmap: row #{}", entity, queryName, position++)
+                            result.add(mapper.mapRow(rs))
                         }
                     }
                 }
@@ -134,7 +134,7 @@ class GQueryTemplate(private val source: DataSource, reader: Reader, parser: Par
      * @param params    params for inject in template
      * @return unbounded list with map key value
      */
-    fun queryMap(entity: String, queryName: String, params: Map<String, Any>): List<Map<String, Any>> {
+    fun queryMap(entity: String, queryName: String, params: Map<String, Any>): List<Map<String, *>> {
         return queryList(entity, queryName, params, DefaultMapRowMapper())
     }
 

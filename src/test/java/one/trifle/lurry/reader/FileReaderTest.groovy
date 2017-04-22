@@ -1,7 +1,6 @@
 package one.trifle.lurry.reader
 
 import groovy.transform.CompileStatic
-import one.trifle.lurry.exception.LurryPermissionException
 import org.junit.Test
 
 import static org.junit.Assert.fail
@@ -18,7 +17,7 @@ class FileReaderTest {
         new FileReader([null] as File[]).iterator()
     }
 
-    @Test(expected = LurryPermissionException)
+    @Test(expected = FileNotFoundException)
     void permissionElement() {
         new FileReader([new File("")] as File[]).iterator()
     }

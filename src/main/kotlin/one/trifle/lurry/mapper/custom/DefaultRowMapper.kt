@@ -31,7 +31,7 @@ import java.sql.ResultSet
  * @author Aleksey Dobrynin
  */
 class DefaultRowMapper<T>(private val clazz: Class<T>) : RowMapper<T> {
-    override fun mapRow(rs: ResultSet, rowNum: Int): T {
+    override fun mapRow(rs: ResultSet): T {
         try {
             val metaData = rs.metaData
             val obj = clazz.newInstance()

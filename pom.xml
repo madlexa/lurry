@@ -1,6 +1,5 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>one.trifle</groupId>
@@ -47,6 +46,9 @@
         <json.parser.version>2.8.0</json.parser.version>
         <yaml.parser.version>1.17</yaml.parser.version>
         <xml.parser.version>1.2.0</xml.parser.version>
+
+        <!--DOCUMENTATION-->
+        <dokka.version>0.9.13</dokka.version>
 
         <!--TEST-->
         <junit.version>4.12</junit.version>
@@ -244,35 +246,27 @@
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.0.0</version>
             </plugin>
+
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>${dokka.version}</version>
                 <executions>
                     <execution>
-                        <id>verify-javadocs</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>javadoc</goal>
+                            <goal>dokka</goal>
                         </goals>
                         <configuration>
-                            <quiet>true</quiet>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <sourcepath>${project.build.sourceDirectory};${project.build.directory}/jdk</sourcepath>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                            <noqualifier>all</noqualifier>
                             <quiet>true</quiet>
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludePackageNames>*.internal</excludePackageNames>
+                </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -346,6 +340,17 @@
 
         </plugins>
     </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jcenter</id>
+            <name>JCenter</name>
+            <url>https://jcenter.bintray.com/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
 
     <scm>
         <connection>scm:git:https://github.com/madlexa/lurry.git</connection>

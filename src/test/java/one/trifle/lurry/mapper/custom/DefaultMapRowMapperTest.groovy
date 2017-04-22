@@ -1,6 +1,5 @@
 package one.trifle.lurry.mapper.custom
 
-import one.trifle.lurry.exception.LurrySqlException
 import org.junit.Test
 
 import java.sql.ResultSet
@@ -29,7 +28,7 @@ class DefaultMapRowMapperTest {
         when(rs.getObject(eq(1))).thenReturn(7)
         when(rs.getObject(eq(2))).thenReturn("test")
 
-        Map<String, Object> map = new DefaultMapRowMapper().mapRow(rs, 0)
+        Map<String, Object> map = new DefaultMapRowMapper().mapRow(rs)
         assertEquals(7, map.id)
         assertEquals("test", map.name)
     }
@@ -48,13 +47,13 @@ class DefaultMapRowMapperTest {
         when(rs.getObject(eq(2))).thenReturn("test")
         when(rs.getObject(eq(3))).thenReturn("fake")
 
-        Map<String, Object> map = new DefaultMapRowMapper().mapRow(rs, 0)
+        Map<String, Object> map = new DefaultMapRowMapper().mapRow(rs)
         assertEquals(7, map.id)
         assertEquals("test", map.name)
         assertEquals("fake", map.fake)
     }
 
-    @Test(expected = LurrySqlException)
+    @Test(expected = SQLException)
     void notField() {
         ResultSetMetaData metaData = mock(ResultSetMetaData)
         when(metaData.columnCount).thenReturn(3)
@@ -63,10 +62,10 @@ class DefaultMapRowMapperTest {
         ResultSet rs = mock(ResultSet)
         when(rs.getMetaData()).thenReturn(metaData)
 
-        new DefaultMapRowMapper().mapRow(rs, 0)
+        new DefaultMapRowMapper().mapRow(rs)
     }
 
-    @Test(expected = LurrySqlException)
+    @Test(expected = SQLException)
     void notObject() {
         ResultSetMetaData metaData = mock(ResultSetMetaData)
         when(metaData.columnCount).thenReturn(3)
@@ -77,7 +76,7 @@ class DefaultMapRowMapperTest {
 
         when(rs.getMetaData()).thenReturn(metaData)
 
-        new DefaultMapRowMapper().mapRow(rs, 0)
+        new DefaultMapRowMapper().mapRow(rs)
     }
 
 }
