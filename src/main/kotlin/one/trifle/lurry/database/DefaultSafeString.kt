@@ -33,7 +33,7 @@ object DefaultSafeString {
             return null
         }
         val to = StringBuilder("'")
-        for (symbol in str.toCharArray()) {
+        for (symbol in str) {
             if (symbol == '\'') {
                 to.append(symbol)
             }
