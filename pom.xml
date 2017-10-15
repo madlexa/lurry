@@ -18,23 +18,18 @@
         </license>
     </licenses>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
         <!--SYSTEM-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
         <project.package>one.trifle.lurry</project.package>
         <project.package.path>one/trifle/lurry</project.package.path>
 
         <!--LOGIC-->
-        <java.version>1.7</java.version>
-        <groovy.version>2.4.6</groovy.version>
-        <kotlin.version>1.1.2-4</kotlin.version>
+        <java.version>1.6</java.version>
+        <groovy.version>2.4.12</groovy.version>
+        <kotlin.version>1.1.51</kotlin.version>
 
         <!--LOGGER-->
         <logger.version>1.7.21</logger.version>
@@ -48,7 +43,7 @@
         <xml.parser.version>1.2.0</xml.parser.version>
 
         <!--DOCUMENTATION-->
-        <dokka.version>0.9.13</dokka.version>
+        <dokka.version>0.9.15</dokka.version>
 
         <!--TEST-->
         <junit.version>4.12</junit.version>
@@ -62,11 +57,10 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${groovy.version}</version>
-            <classifier>indy</classifier>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jre7</artifactId>
+            <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
@@ -140,6 +134,9 @@
     </developers>
 
     <build>
+        <sourceDirectory>src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>src/test/groovy</testSourceDirectory>
+
         <plugins>
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>
@@ -148,25 +145,26 @@
                 <executions>
                     <execution>
                         <id>compile</id>
+                        <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
                         <configuration>
                             <sourceDirs>
-                                <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
-                                <sourceDir>${project.basedir}/src/main/java</sourceDir>
+                                <source>src/main/kotlin</source>
                             </sourceDirs>
                         </configuration>
                     </execution>
                     <execution>
                         <id>test-compile</id>
+                        <phase>test-compile</phase>
                         <goals>
                             <goal>test-compile</goal>
                         </goals>
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
-                                <sourceDir>${project.basedir}/src/test/java</sourceDir>
+                                <sourceDir>${project.basedir}/src/test/groovy</sourceDir>
                             </sourceDirs>
                         </configuration>
                     </execution>
@@ -175,42 +173,23 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.7.0</version>
                 <configuration>
-                    <compilerId>groovy-eclipse-compiler</compilerId>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-eclipse-compiler</artifactId>
-                        <version>2.7.0-01</version>
-                    </dependency>
-                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>1.6</version>
                 <executions>
-                    <!-- Replacing default-compile as it is treated specially by maven -->
                     <execution>
-                        <id>default-compile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <!-- Replacing default-testCompile as it is treated specially by maven -->
-                    <execution>
-                        <id>default-testCompile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>java-compile</id>
-                        <phase>compile</phase>
                         <goals>
+                            <goal>addSources</goal>
+                            <goal>addTestSources</goal>
                             <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>java-test-compile</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>testCompile</goal>
+                            <goal>compileTests</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -231,7 +210,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.7.201606060606</version>
+                <version>0.7.9</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -247,6 +226,7 @@
                 <version>4.0.0</version>
             </plugin>
 
+<!--
             <plugin>
                 <groupId>org.jetbrains.dokka</groupId>
                 <artifactId>dokka-maven-plugin</artifactId>
@@ -259,7 +239,16 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <sourceLinks>
+                        <link>
+                            <dir>${project.basedir}/src/kotlin</dir>
+                            <url>https://github.com/madlexa/lurry</url>
+                        </link>
+                    </sourceLinks>
+                </configuration>
             </plugin>
+-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

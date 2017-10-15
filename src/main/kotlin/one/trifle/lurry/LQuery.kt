@@ -13,11 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry.model
+package one.trifle.lurry
 
 /**
- * Larry format for aggregate queries by entity
+ * Processor for transform Lurry-Template to Sql String
  *
  * @author Aleksey Dobrynin
  */
-data class Entity(val name: Class<*>, var queries: Array<Query> = emptyArray())
+data class LQuery(private val entity: String, private val name: String) {
+
+    /**
+     * generate sql from template
+     *
+     * @param params placeholders
+     *
+     * @return correct sql string
+     */
+    fun sql(params: Map<String, Any>): String {
+        TODO()
+    }
+}

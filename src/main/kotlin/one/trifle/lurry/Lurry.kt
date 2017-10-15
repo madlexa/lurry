@@ -13,15 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry.exception;
+package one.trifle.lurry
+
+import one.trifle.lurry.connection.LurrySource
 
 /**
- * Specific lurry exception for resource permission error
+ * Main class of lurry library for execute query and map to object
+ *
+ * @param source database connection source
  *
  * @author Aleksey Dobrynin
  */
-public class LurryPermissionException extends LurryException {
-    public LurryPermissionException(String message, Throwable cause) {
-        super(message, cause);
+class Lurry(private val source: LurrySource) {
+    /**
+     * execute query with params
+     *
+     * @param query executed query
+     * @param params template placeholders
+     *
+     * @return result list with objects
+     */
+    fun <T> query(query: LQuery, params: Map<String, Any>): List<T> {
+        return emptyList()
     }
 }
