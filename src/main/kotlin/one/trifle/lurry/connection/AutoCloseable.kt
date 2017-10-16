@@ -13,27 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package one.trifle.lurry
+package one.trifle.lurry.connection
 
-import one.trifle.lurry.connection.LurrySource
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.Statement
 
-/**
- * Processor for transform Lurry-Template to Sql String
- *
- * @param template GString sql template
- *
- * @author Aleksey Dobrynin
- */
-data class LQuery(private val template: String, private val source: LurrySource) {
+inline fun <R> Connection.use(block: (Connection) -> R): R {
+    try {
+        return block(this)
+    } finally {
+        this.close()
+    }
+}
 
-    /**
-     * generate sql from template
-     *
-     * @param params placeholders
-     *
-     * @return correct sql string
-     */
-    fun sql(params: Map<String, Any>): String {
-        return ""
+inline fun <R> Statement.use(block: (Statement) -> R): R {
+    try {
+        return block(this)
+    } finally {
+        this.close()
+    }
+}
+
+inline fun <R> ResultSet.use(block: (ResultSet) -> R): R {
+    try {
+        return block(this)
+    } finally {
+        this.close()
     }
 }

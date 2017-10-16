@@ -11,7 +11,7 @@ class LurryTest {
         // INIT
         def source = new LurrySource() {}
         def lurry = new Lurry(source)
-        def query = new LQuery("person", "all")
+        def query = new LQuery("", source)
         def params = [:]
 
         // EXEC
