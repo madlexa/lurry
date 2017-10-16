@@ -34,6 +34,6 @@ data class LQuery(private val template: String, private val source: LurrySource)
      * @return correct sql string
      */
     fun sql(params: Map<String, Any>): String {
-        return ""
+        return template
     }
 }
