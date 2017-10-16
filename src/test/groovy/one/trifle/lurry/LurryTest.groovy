@@ -1,5 +1,6 @@
 package one.trifle.lurry
 
+import one.trifle.lurry.connection.DatabaseType
 import one.trifle.lurry.connection.LurrySource
 import org.junit.Test
 
@@ -9,7 +10,9 @@ class LurryTest {
     @Test
     void "simple api"() {
         // INIT
-        def source = new LurrySource() {}
+        def source = new LurrySource() {
+            @Override DatabaseType getType() { DatabaseType.DEFAULT }
+        }
         def lurry = new Lurry(source)
         def query = new LQuery("", source)
         def params = [:]

@@ -15,4 +15,6 @@
  */
 package one.trifle.lurry.connection
 
-interface LurrySource
+interface LurrySource {
+    val type: DatabaseType
+}

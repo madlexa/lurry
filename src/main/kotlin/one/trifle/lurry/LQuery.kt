@@ -15,16 +15,23 @@
  */
 package one.trifle.lurry
 
+import groovy.lang.Closure
+import groovy.text.GStringTemplateEngine
+import groovy.text.Template
 import one.trifle.lurry.connection.LurrySource
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import java.util.*
 
 /**
  * Processor for transform Lurry-Template to Sql String
  *
- * @param template GString sql template
+ * @param string GString sql template
+ * @param source connection source with database type
  *
  * @author Aleksey Dobrynin
  */
-data class LQuery(private val template: String, private val source: LurrySource) {
+data class LQuery(private val string: String, private val source: LurrySource) {
+    private val template: Template = GStringTemplateEngine().createTemplate(string)
 
     /**
      * generate sql from template
@@ -34,6 +41,18 @@ data class LQuery(private val template: String, private val source: LurrySource)
      * @return correct sql string
      */
     fun sql(params: Map<String, Any>): String {
-        return template
+        val values = object : HashMap<String, Any>() {
+            override fun containsKey(key: String): Boolean {
+                return true
+            }
+        }
+        values.putAll(params)
+
+        return DefaultGroovyMethods.use(LQuery::class.java, source.type.mixed,
+                object : Closure<String>(this, this) {
+                    fun doCall(): String {
+                        return template.make(values).toString()
+                    }
+                })
     }
 }
