@@ -81,4 +81,64 @@ class LQueryTest {
         // CHECK
         assertEquals(results, "my test = '''1\\\\'")
     }
+
+    @Test
+    void "default connector with list params"() {
+        // INIT
+        def query = new LQuery("my test in (\${test.join()})", new LurrySource() {
+            @Override DatabaseType getType() { DatabaseType.DEFAULT }
+        })
+        def params = [test: [1,2,3] as Integer[]]
+
+        // EXEC
+        def results = query.sql(params)
+
+        // CHECK
+        assertEquals(results, "my test in (1,2,3)")
+    }
+
+    @Test
+    void "mysql connector with list params"() {
+        // INIT
+        def query = new LQuery("my test in (\${test.join()})", new LurrySource() {
+            @Override DatabaseType getType() { DatabaseType.MYSQL }
+        })
+        def params = [test: [1,2,3] as Integer[]]
+
+        // EXEC
+        def results = query.sql(params)
+
+        // CHECK
+        assertEquals(results, "my test in (1,2,3)")
+    }
+
+    @Test
+    void "default connector with list string params"() {
+        // INIT
+        def query = new LQuery("my test in (\${test.join()})", new LurrySource() {
+            @Override DatabaseType getType() { DatabaseType.DEFAULT }
+        })
+        def params = [test: [1,2,3] as String[]]
+
+        // EXEC
+        def results = query.sql(params)
+
+        // CHECK
+        assertEquals(results, "my test in ('1','2','3')")
+    }
+
+    @Test
+    void "mysql connector with list string params"() {
+        // INIT
+        def query = new LQuery("my test in (\${test.join()})", new LurrySource() {
+            @Override DatabaseType getType() { DatabaseType.MYSQL }
+        })
+        def params = [test: [1,2,3] as String[]]
+
+        // EXEC
+        def results = query.sql(params)
+
+        // CHECK
+        assertEquals(results, "my test in ('1','2','3')")
+    }
 }
