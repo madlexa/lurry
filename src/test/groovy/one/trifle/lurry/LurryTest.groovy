@@ -14,7 +14,7 @@ class LurryTest {
             @Override DatabaseType getType() { DatabaseType.DEFAULT }
         }
         def lurry = new Lurry(source)
-        def query = new LQuery("", source)
+        def query = new LQuery("")
         def params = [:]
 
         // EXEC

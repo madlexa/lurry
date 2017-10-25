@@ -18,7 +18,6 @@ package one.trifle.lurry
 import groovy.lang.Closure
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
-import one.trifle.lurry.connection.LurrySource
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import java.util.*
 
@@ -30,7 +29,7 @@ import java.util.*
  *
  * @author Aleksey Dobrynin
  */
-data class LQuery(private val string: String, private val source: LurrySource) {
+data class LQuery(private val string: String) {
     private val template: Template = GStringTemplateEngine().createTemplate(string)
 
     /**
@@ -40,7 +39,7 @@ data class LQuery(private val string: String, private val source: LurrySource) {
      *
      * @return correct sql string
      */
-    fun sql(params: Map<String, Any>): String = DefaultGroovyMethods.use(LQuery::class.java, source.type.mixed,
+    fun sql(params: Map<String, Any>, mixed: Class<*>): String = DefaultGroovyMethods.use(LQuery::class.java, mixed,
             object : Closure<String>(this, this) {
                 fun doCall(): String {
                     return template.make(params.convert())
