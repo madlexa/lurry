@@ -40,19 +40,15 @@ data class LQuery(private val string: String, private val source: LurrySource) {
      *
      * @return correct sql string
      */
-    fun sql(params: Map<String, Any>): String {
-        val values = object : HashMap<String, Any>() {
-            override fun containsKey(key: String): Boolean {
-                return true
-            }
-        }
-        values.putAll(params)
+    fun sql(params: Map<String, Any>): String = DefaultGroovyMethods.use(LQuery::class.java, source.type.mixed,
+            object : Closure<String>(this, this) {
+                fun doCall(): String {
+                    return template.make(params.convert())
+                            .toString()
+                }
+            })
 
-        return DefaultGroovyMethods.use(LQuery::class.java, source.type.mixed,
-                object : Closure<String>(this, this) {
-                    fun doCall(): String {
-                        return template.make(values).toString()
-                    }
-                })
-    }
+    private fun Map<String, Any>.convert() = object : HashMap<String, Any>() {
+        override fun containsKey(key: String) = true
+    }.apply { putAll(this@convert) }
 }
