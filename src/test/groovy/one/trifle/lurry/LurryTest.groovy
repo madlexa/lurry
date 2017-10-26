@@ -2,6 +2,7 @@ package one.trifle.lurry
 
 import one.trifle.lurry.connection.DatabaseType
 import one.trifle.lurry.connection.LurrySource
+import org.jetbrains.annotations.NotNull
 import org.junit.Test
 
 import static junit.framework.TestCase.assertEquals
@@ -12,6 +13,7 @@ class LurryTest {
         // INIT
         def source = new LurrySource() {
             @Override DatabaseType getType() { DatabaseType.DEFAULT }
+            @Override List<LurrySource.Row> execute(@NotNull LQuery query, @NotNull Map<String, ?> params) { [] }
         }
         def lurry = new Lurry(source)
         def query = new LQuery("")

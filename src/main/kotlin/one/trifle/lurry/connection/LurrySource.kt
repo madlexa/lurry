@@ -15,6 +15,13 @@
  */
 package one.trifle.lurry.connection
 
+import one.trifle.lurry.LQuery
+
 interface LurrySource {
     val type: DatabaseType
+    fun execute(query: LQuery, params: Map<String, Any>): List<Row>
+
+    interface Row {
+        fun toMap(): Map<String, Any>
+    }
 }

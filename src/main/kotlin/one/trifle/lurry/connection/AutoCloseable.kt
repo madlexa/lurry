@@ -19,7 +19,8 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
 
-inline fun <R> Connection.use(block: (Connection) -> R): R {
+inline fun <R> Connection?.use(block: (Connection) -> R): R? {
+    if (this == null) return null
     try {
         return block(this)
     } finally {
@@ -27,7 +28,8 @@ inline fun <R> Connection.use(block: (Connection) -> R): R {
     }
 }
 
-inline fun <R> Statement.use(block: (Statement) -> R): R {
+inline fun <R> Statement?.use(block: (Statement) -> R): R? {
+    if (this == null) return null
     try {
         return block(this)
     } finally {
@@ -35,10 +37,24 @@ inline fun <R> Statement.use(block: (Statement) -> R): R {
     }
 }
 
-inline fun <R> ResultSet.use(block: (ResultSet) -> R): R {
+inline fun <R> ResultSet?.use(block: (ResultSet) -> R): R? {
+    if (this == null) return null
     try {
         return block(this)
     } finally {
         this.close()
     }
+}
+
+inline fun <R> ResultSet?.map(block: (columns: List<String>, ResultSet) -> R): List<R> {
+    if (this == null) return emptyList()
+    val result = ArrayList<R>()
+    use {
+        val columns = (1..metaData.columnCount).map { metaData.getColumnName(it) }
+
+        while (next()) {
+            result += block(columns, this)
+        }
+    }
+    return result
 }
