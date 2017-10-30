@@ -1,11 +1,13 @@
 package one.trifle.lurry
 
+import groovy.transform.CompileStatic
 import one.trifle.lurry.connection.DefaultSafeString
 import one.trifle.lurry.connection.MySqlSafeString
 import org.junit.Test
 
 import static junit.framework.TestCase.assertEquals
 
+@CompileStatic
 class LQueryTest {
     @Test
     void "empty template"() {

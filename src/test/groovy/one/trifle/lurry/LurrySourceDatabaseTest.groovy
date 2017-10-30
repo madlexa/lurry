@@ -1,5 +1,6 @@
 package one.trifle.lurry
 
+import groovy.transform.CompileStatic
 import one.trifle.lurry.connection.DatabaseType
 import org.junit.Test
 
@@ -11,6 +12,7 @@ import static junit.framework.TestCase.assertEquals
 import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
 
+@CompileStatic
 class LurrySourceDatabaseTest {
     @Test
     void "init null connection"() {

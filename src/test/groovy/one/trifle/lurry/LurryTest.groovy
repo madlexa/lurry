@@ -1,5 +1,6 @@
 package one.trifle.lurry
 
+import groovy.transform.CompileStatic
 import one.trifle.lurry.connection.DatabaseType
 import one.trifle.lurry.connection.LurrySource
 import org.jetbrains.annotations.NotNull
@@ -7,6 +8,7 @@ import org.junit.Test
 
 import static junit.framework.TestCase.assertEquals
 
+@CompileStatic
 class LurryTest {
     @Test
     void "simple api"() {
