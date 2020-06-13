@@ -14,7 +14,19 @@ Lurry can use following formats for saving queries: `yaml`, `xml` and `json`.
 
 Lurry Goals: 
 * A simple and convenient way to use SQL with object-oriented applications 
-* The reduction of number of queries
+* Reducing the number of requests
+
+TODO
+
+DSL
+```lurry
+import package.Person
+import package.Contact
+import package.ContactType
+
+main: new Person(#person_id, #person_name, contacts, #income - #expense)
+contacts(#person_id): new Contact(#contact_id, ContactType.of(#contact_type), #contact_value)
+```
  
 ### License
  

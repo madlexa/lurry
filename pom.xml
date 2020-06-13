@@ -36,7 +36,7 @@
         <!--LOGIC-->
         <java.version>1.6</java.version>
         <groovy.version>2.4.12</groovy.version>
-        <kotlin.version>1.1.51</kotlin.version>
+        <kotlin.version>1.3.72</kotlin.version>
 
         <!--LOGGER-->
         <logger.version>1.7.21</logger.version>
@@ -119,13 +119,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.spockframework</groupId>
-            <artifactId>spock-core</artifactId>
-            <version>${spock.version}</version>
             <scope>test</scope>
         </dependency>
 

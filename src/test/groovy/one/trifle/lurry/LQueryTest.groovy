@@ -13,7 +13,7 @@ class LQueryTest {
     void "empty template"() {
         // INIT
         def query = new LQuery("")
-        def params = [:]
+        Map<String, Object> params = [:]
 
         // EXEC
         def results = query.sql(params, DefaultSafeString.class)
