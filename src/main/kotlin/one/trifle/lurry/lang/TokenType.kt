@@ -1,18 +1,6 @@
 package one.trifle.lurry.lang
 
 enum class TokenType {
-//    NUMBER,
-//    HEX_NUMBER,
-//
-//    PLUS,
-//    MINUS,
-//    STAR,
-//    SLASH,
-//
-//    LPAREN,
-//    RPAREN,
-//
-//    EOF;
     // Single-character tokens.
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
     COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
