@@ -99,8 +99,15 @@ class Lexer(source: InputStream) {
             buffer.append(ch)
             ch = reader.next()
         }
+        val identifier = buffer.toString()
+        val type = when(identifier) {
+            "false" -> TokenType.FALSE
+            "true" -> TokenType.TRUE
+            "null" -> TokenType.NULL
+            else -> TokenType.IDENTIFIER
+        }
         // test keywords
-        return Token(TokenType.IDENTIFIER, TokenValue(buffer.toString()), line, position)
+        return Token(type, TokenValue(identifier), line, position)
     }
 }
 

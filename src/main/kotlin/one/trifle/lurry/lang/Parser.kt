@@ -108,10 +108,10 @@ class Parser(tokens: List<Token>) {
     //> primary
     private fun primary(): Expression {
         val expr = when (reader.peek().type) {
-            TokenType.FALSE -> LiteralExpression(reader.peek())
-            TokenType.TRUE -> LiteralExpression(reader.peek())
-            TokenType.NIL -> LiteralExpression(reader.peek())
-            TokenType.NUMBER -> LiteralExpression(reader.peek())
+            TokenType.FALSE,
+            TokenType.TRUE,
+            TokenType.NULL,
+            TokenType.NUMBER,
             TokenType.STRING -> LiteralExpression(reader.peek())
             TokenType.LEFT_PAREN -> {
                 val line = reader.peek().line
