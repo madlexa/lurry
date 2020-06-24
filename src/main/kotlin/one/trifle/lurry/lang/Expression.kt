@@ -20,4 +20,9 @@ data class GroupingExpression(val expr: Expression) : Expression() {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitGroupingExpression(this)
 }
 
+data class VariableExpression(val token: Token) : Expression() {
+    override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitVarExpression(this)
+}
+
+
 

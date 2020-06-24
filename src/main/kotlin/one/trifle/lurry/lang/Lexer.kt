@@ -14,14 +14,14 @@ class Lexer(source: InputStream) {
                 '-' -> Token(TokenType.MINUS, TokenValue.EMPTY, reader.line, reader.position)
                 '+' -> Token(TokenType.PLUS, TokenValue.EMPTY, reader.line, reader.position)
                 '*' -> Token(TokenType.STAR, TokenValue.EMPTY, reader.line, reader.position)
+                ';' -> Token(TokenType.SEMICOLON, TokenValue.EMPTY, reader.line, reader.position)
                 ' ', '\t', '\r', '\n' -> null
+                '=' -> Token(if (reader.testNext('=')) TokenType.EQUAL_EQUAL else TokenType.EQUAL, TokenValue.EMPTY, reader.line, reader.position)
+                '!' -> Token(if (reader.testNext('=')) TokenType.BANG_EQUAL else TokenType.BANG, TokenValue.EMPTY, reader.line, reader.position)
+                '<' -> Token(if (reader.testNext('=')) TokenType.LESS_EQUAL else TokenType.LESS, TokenValue.EMPTY, reader.line, reader.position)
+                '>' -> Token(if (reader.testNext('=')) TokenType.GREATER_EQUAL else TokenType.GREATER, TokenValue.EMPTY, reader.line, reader.position)
                 '"' -> string()
-                '/' -> if (reader.testNext('/')) { // comment
-                    while (reader.peek() != '\n' && reader.peek() != Char.MIN_VALUE) reader.next() // ignore comment
-                    null
-                } else {
-                    Token(TokenType.SLASH, TokenValue.EMPTY, reader.line, reader.position)
-                }
+                '/' -> slash()
                 else -> when {
                     ch.isDigit() -> number()
                     ch.isLetter() || ch == '_' -> identifier()
@@ -32,6 +32,13 @@ class Lexer(source: InputStream) {
         }
         result += Token.EOF
         return result
+    }
+
+    private fun slash(): Token? = if (reader.testNext('/')) { // comment
+        while (reader.peek() != '\n' && reader.peek() != Char.MIN_VALUE) reader.next() // ignore comment
+        null
+    } else {
+        Token(TokenType.SLASH, TokenValue.EMPTY, reader.line, reader.position)
     }
 
     private fun string(): Token {
@@ -55,7 +62,7 @@ class Lexer(source: InputStream) {
                 buffer.append(ch)
             }
         }
-        when(reader.peekNext()) {
+        when (reader.peekNext()) {
             '"' -> reader.next()
             Char.MIN_VALUE -> throw RuntimeException("Unterminated string line: ${reader.line} position ${reader.position}")
         }
@@ -92,22 +99,20 @@ class Lexer(source: InputStream) {
 
     private fun identifier(): Token {
         val buffer = StringBuilder()
-        var ch = reader.peek()
         val line = reader.line
         val position = reader.position
-        while (ch.isDigit() || ch.isLetter() || ch == '_') {
-            buffer.append(ch)
-            ch = reader.next()
+        buffer.append(reader.peek())
+        while (reader.peekNext().isDigit() || reader.peekNext().isLetter() || reader.peekNext() == '_') {
+            buffer.append(reader.next())
         }
-        val identifier = buffer.toString()
-        val type = when(identifier) {
-            "false" -> TokenType.FALSE
-            "true" -> TokenType.TRUE
-            "null" -> TokenType.NULL
-            else -> TokenType.IDENTIFIER
+        return when (val identifier = buffer.toString()) {
+            "false" -> Token(TokenType.FALSE, TokenValue.EMPTY, line, position)
+            "true" -> Token(TokenType.TRUE, TokenValue.EMPTY, line, position)
+            "null" -> Token(TokenType.NULL, TokenValue.EMPTY, line, position)
+            "var" -> Token(TokenType.VAR, TokenValue.EMPTY, line, position)
+            "println" -> Token(TokenType.PRINT, TokenValue.EMPTY, line, position)
+            else -> Token(TokenType.IDENTIFIER, TokenValue(identifier), line, position)
         }
-        // test keywords
-        return Token(type, TokenValue(identifier), line, position)
     }
 }
 

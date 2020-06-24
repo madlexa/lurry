@@ -1,0 +1,13 @@
+println (group (PLUS foo bar))
+println (group (PLUS  ))
+println (group (PLUS foo
+ bar))
+println (group (STAR foo 3))
+println (group (STAR foo 0))
+println (group (PLUS foo 10))
+println (group (PLUS 10 foo))
+println (group (PLUS (PLUS 10 foo) 10))
+println (group (PLUS (PLUS 10 10) foo))
+println (group (PLUS 10 (group (PLUS 10 foo))))
+println (group (PLUS (PLUS foo 10) 10))
+println (group (PLUS foo (group (PLUS 10 10))))

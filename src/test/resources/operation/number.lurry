@@ -1,0 +1,7 @@
+println(2 + 2 * 2);
+println((2 + 2) * 2);
+println((2 - 2) * 2);
+println((2 + 2) * 2 * 0);
+println(2.0 + 2.0 * 2.0);
+println(2 / 2 - 2);
+println(2+2+2+2+2+2);

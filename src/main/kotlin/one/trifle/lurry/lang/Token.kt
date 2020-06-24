@@ -2,6 +2,7 @@ package one.trifle.lurry.lang
 
 data class Token(val type: TokenType, val value: TokenValue, val line: Int, val position: Int) {
     companion object {
+        val NULL = Token(TokenType.NULL, TokenValue.EMPTY, 0, 0)
         val EOF = Token(TokenType.EOF, TokenValue.EMPTY, 0, 0)
     }
 

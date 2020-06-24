@@ -1,0 +1,12 @@
+println("foo" + "bar");
+println("" + "");
+println("foo\n" + "bar");
+println("foo" * 3);
+println("foo" * 0);
+println("foo" + 10);
+println(10 + "foo");
+println(10 + "foo" + 10);
+println(10 + 10 + "foo");
+println(10 + (10 + "foo"));
+println("foo" + 10 + 10);
+println("foo" + (10 + 10));

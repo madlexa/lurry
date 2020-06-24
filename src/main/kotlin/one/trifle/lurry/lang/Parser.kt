@@ -15,14 +15,35 @@ class Parser(tokens: List<Token>) {
         return statements
     }
 
-    private fun declaration(): Statement {
-        // TODO CLASS/FUN/VAR
-        return statement()
+    private fun declaration(): Statement = when(reader.peek().type) {
+            TokenType.VAR -> varDeclaration()
+            TokenType.FUN -> TODO()
+            else -> statement()
+        }
+
+    private fun varDeclaration(): Statement {
+        if(!reader.testNext(TokenType.IDENTIFIER)) throw RuntimeException("Expect variable name.")
+        val name = reader.peek()
+        reader.next()
+        val value: Expression = if (reader.test(TokenType.EQUAL))
+            expression()
+        else
+            LiteralExpression(Token.NULL)
+        if (!reader.test(TokenType.SEMICOLON))  throw RuntimeException("Expect ';' after variable declaration")
+        return VarStatement(name, value)
     }
 
-    private fun statement(): Statement {
-        // todo FOR/IF/PRINT/RETURN/WHILE/LEFT_BRACE
-        return expressionStatement()
+    private fun statement(): Statement = when (reader.peek().type) {
+        TokenType.PRINT -> printStatement()
+        // todo FOR/IF/RETURN/WHILE/LEFT_BRACE
+        else -> expressionStatement()
+    }
+
+    private fun printStatement(): Statement {
+        reader.next()
+        val value: Expression = expression()
+        if(!reader.test(TokenType.SEMICOLON)) throw RuntimeException("Expect ';' after value.")
+        return PrintStatement(value)
     }
 
     private fun expressionStatement(): Statement {
@@ -113,6 +134,7 @@ class Parser(tokens: List<Token>) {
             TokenType.NULL,
             TokenType.NUMBER,
             TokenType.STRING -> LiteralExpression(reader.peek())
+            TokenType.IDENTIFIER -> VariableExpression(reader.peek())
             TokenType.LEFT_PAREN -> {
                 val line = reader.peek().line
                 val position = reader.peek().position
@@ -123,7 +145,6 @@ class Parser(tokens: List<Token>) {
                 }
                 GroupingExpression(expr)
             }
-            // TODO IDENTIFIER
             else -> throw RuntimeException("Expect expression [${reader.peek()}] line: ${reader.peek().line}  position: ${reader.peek().position}")
         }
         reader.next()
@@ -155,6 +176,14 @@ private class TokenReader(private val tokens: List<Token>) {
 
     fun testNext(type: TokenType): Boolean {
         if (next.type == type) {
+            next()
+            return true
+        }
+        return false
+    }
+
+    fun test(type: TokenType): Boolean {
+        if (current.type == type) {
             next()
             return true
         }

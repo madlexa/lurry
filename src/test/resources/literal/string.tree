@@ -1,0 +1,5 @@
+println test
+println 1 str
+println "
+'str'\
+println println "str"
