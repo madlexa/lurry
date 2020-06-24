@@ -1,10 +1,5 @@
 package one.trifle.lurry.lang
 
-import com.sun.tools.javac.tree.DCTree
-import com.sun.tools.javac.tree.JCTree
-import com.sun.tools.javac.tree.TreeMaker
-import com.sun.tools.javac.tree.TreeScanner
-import com.sun.tools.javac.util.Context
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.*
