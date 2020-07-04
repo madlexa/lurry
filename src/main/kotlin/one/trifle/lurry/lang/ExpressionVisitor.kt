@@ -44,14 +44,14 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 left is Long && right is Long -> left * right
                 left is Double && right is Double -> left * right
                 // TODO Float/Double/BigInteger/BigDecimal/Char/Short/Byte
-                else -> throw RuntimeException("Unsupported operation STAR between ${left?.javaClass?.name} and ${right?.javaClass?.name}")
+                else -> throw LurryInterpretationException("Unsupported operation STAR between ${left?.javaClass?.name} and ${right?.javaClass?.name}", expr.operation.line, expr.operation.position)
             }
             TokenType.SLASH -> when {
                 left is Int && right is Int -> left / right
                 left is Long && right is Long -> left / right
                 left is Double && right is Double -> left / right
                 // TODO Float/Double/BigInteger/BigDecimal/Char/Short/Byte
-                else -> throw RuntimeException("Unsupported operation SLASH between ${left?.javaClass?.name} and ${right?.javaClass?.name}")
+                else -> throw LurryInterpretationException("Unsupported operation SLASH between ${left?.javaClass?.name} and ${right?.javaClass?.name}", expr.operation.line, expr.operation.position)
             }
             TokenType.PLUS -> when {
                 left is String && right is String -> left + right
@@ -72,7 +72,7 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
 
                 left is Double && right is Double -> left + right
                 // TODO Float/Double/BigInteger/BigDecimal/Char/Short/Byte
-                else -> throw RuntimeException("Unsupported operation PLUS between ${left?.javaClass?.name} and ${right?.javaClass?.name}")
+                else -> throw LurryInterpretationException("Unsupported operation PLUS between ${left?.javaClass?.name} and ${right?.javaClass?.name}", expr.operation.line, expr.operation.position)
             }
             TokenType.MINUS -> when {
                 // todo String
@@ -80,9 +80,9 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 left is Int && right is Int -> left - right
                 left is Double && right is Double -> left - right
                 // TODO Float/Double/BigInteger/BigDecimal/Char/Short/Byte
-                else -> throw RuntimeException("Unsupported operation MINUS between ${left?.javaClass?.name} and ${right?.javaClass?.name}")
+                else -> throw LurryInterpretationException("Unsupported operation MINUS between ${left?.javaClass?.name} and ${right?.javaClass?.name}", expr.operation.line, expr.operation.position)
             }
-            else -> throw RuntimeException("Unsupported operation ${expr.operation.type}")
+            else -> throw LurryInterpretationException("Unsupported operation ${expr.operation.type}", expr.operation.line, expr.operation.position)
         }
     }
 
@@ -98,9 +98,9 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 is Byte -> -value
                 is BigInteger -> -value
                 is BigDecimal -> -value
-                else -> throw RuntimeException("Unsupported operation MINUS ${value?.javaClass?.name}")
+                else -> throw LurryInterpretationException("Unsupported operation MINUS ${value?.javaClass?.name}", expr.operation.line, expr.operation.position)
             }
-            else -> throw RuntimeException("Unsupported operation ${expr.operation.type}")
+            else -> throw LurryInterpretationException("Unsupported operation ${expr.operation.type}", expr.operation.line, expr.operation.position)
         }
     }
 
@@ -117,7 +117,7 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         if (globals.containsKey(name)) {
             return globals[name]
         } else {
-            throw RuntimeException("Undefined variable '$name' line: ${expr.token.line} position: ${expr.token.position},")
+            throw LurryInterpretationException("Undefined variable '$name'", expr.token.line, expr.token.position)
         }
     }
 

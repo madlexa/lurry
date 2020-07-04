@@ -30,21 +30,21 @@ class Parser(tokens: List<Token>) {
         return statements
     }
 
-    private fun declaration(): Statement = when(reader.peek().type) {
+    private fun declaration(): Statement = when (reader.peek().type) {
         TokenType.VAR -> varDeclaration()
         TokenType.FUN -> TODO()
         else -> statement()
     }
 
     private fun varDeclaration(): Statement {
-        if(!reader.testNext(TokenType.IDENTIFIER)) throw RuntimeException("Expect variable name.")
+        if (!reader.testNext(TokenType.IDENTIFIER)) throw LurryParserException("Expect variable name '${reader.peekNext().value}'.", reader.peekNext().line, reader.peekNext().position)
         val name = reader.peek()
         reader.next()
         val value: Expression = if (reader.test(TokenType.EQUAL))
             expression()
         else
             LiteralExpression(Token.NULL)
-        if (!reader.test(TokenType.SEMICOLON))  throw RuntimeException("Expect ';' after variable declaration")
+        if (!reader.test(TokenType.SEMICOLON)) throw LurryParserException("Expect ';' after variable declaration", reader.peek().line, reader.peek().position)
         return VarStatement(name, value)
     }
 
@@ -57,7 +57,7 @@ class Parser(tokens: List<Token>) {
     private fun printStatement(): Statement {
         reader.next()
         val value: Expression = expression()
-        if(!reader.test(TokenType.SEMICOLON)) throw RuntimeException("Expect ';' after value.")
+        if (!reader.test(TokenType.SEMICOLON)) throw LurryParserException("Expect ';' after value.", reader.peek().line, reader.peek().position)
         return PrintStatement(value)
     }
 
@@ -156,11 +156,11 @@ class Parser(tokens: List<Token>) {
                 reader.next()
                 val expr: Expression = expression()
                 if (reader.peek().type != TokenType.RIGHT_PAREN) {
-                    throw RuntimeException("Expect ')' after expression  line: ${line}  position: ${position}")
+                    throw LurryParserException("Expect ')' after expression", line, position)
                 }
                 GroupingExpression(expr)
             }
-            else -> throw RuntimeException("Expect expression [${reader.peek()}] line: ${reader.peek().line}  position: ${reader.peek().position}")
+            else -> throw LurryParserException("Expect expression [${reader.peek()}]", reader.peek().line, reader.peek().position)
         }
         reader.next()
         return expr

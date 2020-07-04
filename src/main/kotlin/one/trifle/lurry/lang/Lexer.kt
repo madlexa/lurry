@@ -40,7 +40,7 @@ class Lexer(source: InputStream) {
                 else -> when {
                     ch.isDigit() -> number()
                     ch.isLetter() || ch == '_' -> identifier()
-                    else -> throw RuntimeException("Unexpected char [$ch] line: ${reader.line} position ${reader.position}")
+                    else -> throw LurryLexerException("Unexpected char [$ch]", reader.line, reader.position)
                 }
             }
             if (token != null) result += token
@@ -79,7 +79,7 @@ class Lexer(source: InputStream) {
         }
         when (reader.peekNext()) {
             '"' -> reader.next()
-            Char.MIN_VALUE -> throw RuntimeException("Unterminated string line: ${reader.line} position ${reader.position}")
+            Char.MIN_VALUE -> throw LurryLexerException("Unterminated string", reader.line, reader.position)
         }
         return Token(TokenType.STRING, buffer.toString(), line, position)
     }
