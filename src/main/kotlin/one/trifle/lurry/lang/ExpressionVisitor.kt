@@ -44,14 +44,14 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 left is Long && right is Long -> left * right
                 left is Double && right is Double -> left * right
                 // TODO Float/Double/BigInteger/BigDecimal/Char/Short/Byte
-                else -> throw RuntimeException("Unsupported operation MINUS between ${left?.javaClass?.name} and ${right?.javaClass?.name}")
+                else -> throw RuntimeException("Unsupported operation STAR between ${left?.javaClass?.name} and ${right?.javaClass?.name}")
             }
             TokenType.SLASH -> when {
                 left is Int && right is Int -> left / right
                 left is Long && right is Long -> left / right
                 left is Double && right is Double -> left / right
                 // TODO Float/Double/BigInteger/BigDecimal/Char/Short/Byte
-                else -> throw RuntimeException("Unsupported operation MINUS between ${left?.javaClass?.name} and ${right?.javaClass?.name}")
+                else -> throw RuntimeException("Unsupported operation SLASH between ${left?.javaClass?.name} and ${right?.javaClass?.name}")
             }
             TokenType.PLUS -> when {
                 left is String && right is String -> left + right
