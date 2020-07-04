@@ -1,3 +1,18 @@
+/*
+ * Copyright 2020 Aleksey Dobrynin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package one.trifle.lurry.lang
 
 sealed class StatementVisitor<T>(val visitor: ExpressionVisitor<T>) {
@@ -19,7 +34,7 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
 
     override fun visitExpressionStatement(stmt: ExpressionStatement): Any? = evaluate(stmt.expression)
 
-    override fun visitVarStatement(stmt: VarStatement): Unit = visitor.define(stmt.name.value.value.toString(), evaluate(stmt.initializer))
+    override fun visitVarStatement(stmt: VarStatement): Unit = visitor.define(stmt.name.value.toString(), evaluate(stmt.initializer))
 
     private fun evaluate(expression: Expression): Any? = expression.accept(visitor)
     override fun visitPrintStatement(stmt: PrintStatement): Any? {
@@ -44,7 +59,7 @@ class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(vi
         is String -> part
         is Statement -> part.accept(this)
         is Expression -> part.accept(visitor)
-        is Token -> part.value.value.toString()
+        is Token -> part.value.toString()
         else -> part.toString()
     }
 

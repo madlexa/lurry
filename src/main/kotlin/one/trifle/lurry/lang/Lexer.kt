@@ -1,3 +1,18 @@
+/*
+ * Copyright 2020 Aleksey Dobrynin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package one.trifle.lurry.lang
 
 import java.io.InputStream
@@ -9,17 +24,17 @@ class Lexer(source: InputStream) {
         while (reader.peekNext() != Char.MIN_VALUE) {
             reader.next()
             val token: Token? = when (val ch = reader.peek()) {
-                '(' -> Token(TokenType.LEFT_PAREN, TokenValue.EMPTY, reader.line, reader.position)
-                ')' -> Token(TokenType.RIGHT_PAREN, TokenValue.EMPTY, reader.line, reader.position)
-                '-' -> Token(TokenType.MINUS, TokenValue.EMPTY, reader.line, reader.position)
-                '+' -> Token(TokenType.PLUS, TokenValue.EMPTY, reader.line, reader.position)
-                '*' -> Token(TokenType.STAR, TokenValue.EMPTY, reader.line, reader.position)
-                ';' -> Token(TokenType.SEMICOLON, TokenValue.EMPTY, reader.line, reader.position)
+                '(' -> Token(TokenType.LEFT_PAREN, null, reader.line, reader.position)
+                ')' -> Token(TokenType.RIGHT_PAREN, null, reader.line, reader.position)
+                '-' -> Token(TokenType.MINUS, null, reader.line, reader.position)
+                '+' -> Token(TokenType.PLUS, null, reader.line, reader.position)
+                '*' -> Token(TokenType.STAR, null, reader.line, reader.position)
+                ';' -> Token(TokenType.SEMICOLON, null, reader.line, reader.position)
                 ' ', '\t', '\r', '\n' -> null
-                '=' -> Token(if (reader.testNext('=')) TokenType.EQUAL_EQUAL else TokenType.EQUAL, TokenValue.EMPTY, reader.line, reader.position)
-                '!' -> Token(if (reader.testNext('=')) TokenType.BANG_EQUAL else TokenType.BANG, TokenValue.EMPTY, reader.line, reader.position)
-                '<' -> Token(if (reader.testNext('=')) TokenType.LESS_EQUAL else TokenType.LESS, TokenValue.EMPTY, reader.line, reader.position)
-                '>' -> Token(if (reader.testNext('=')) TokenType.GREATER_EQUAL else TokenType.GREATER, TokenValue.EMPTY, reader.line, reader.position)
+                '=' -> Token(if (reader.testNext('=')) TokenType.EQUAL_EQUAL else TokenType.EQUAL, null, reader.line, reader.position)
+                '!' -> Token(if (reader.testNext('=')) TokenType.BANG_EQUAL else TokenType.BANG, null, reader.line, reader.position)
+                '<' -> Token(if (reader.testNext('=')) TokenType.LESS_EQUAL else TokenType.LESS, null, reader.line, reader.position)
+                '>' -> Token(if (reader.testNext('=')) TokenType.GREATER_EQUAL else TokenType.GREATER, null, reader.line, reader.position)
                 '"' -> string()
                 '/' -> slash()
                 else -> when {
@@ -38,7 +53,7 @@ class Lexer(source: InputStream) {
         while (reader.peek() != '\n' && reader.peek() != Char.MIN_VALUE) reader.next() // ignore comment
         null
     } else {
-        Token(TokenType.SLASH, TokenValue.EMPTY, reader.line, reader.position)
+        Token(TokenType.SLASH, null, reader.line, reader.position)
     }
 
     private fun string(): Token {
@@ -66,7 +81,7 @@ class Lexer(source: InputStream) {
             '"' -> reader.next()
             Char.MIN_VALUE -> throw RuntimeException("Unterminated string line: ${reader.line} position ${reader.position}")
         }
-        return Token(TokenType.STRING, TokenValue(buffer.toString()), line, position)
+        return Token(TokenType.STRING, buffer.toString(), line, position)
     }
 
     private fun number(): Token {
@@ -94,7 +109,7 @@ class Lexer(source: InputStream) {
             number.toInt() // todo
         }
 
-        return Token(TokenType.NUMBER, TokenValue(value), line, position)
+        return Token(TokenType.NUMBER, value, line, position)
     }
 
     private fun identifier(): Token {
@@ -106,12 +121,12 @@ class Lexer(source: InputStream) {
             buffer.append(reader.next())
         }
         return when (val identifier = buffer.toString()) {
-            "false" -> Token(TokenType.FALSE, TokenValue.EMPTY, line, position)
-            "true" -> Token(TokenType.TRUE, TokenValue.EMPTY, line, position)
-            "null" -> Token(TokenType.NULL, TokenValue.EMPTY, line, position)
-            "var" -> Token(TokenType.VAR, TokenValue.EMPTY, line, position)
-            "println" -> Token(TokenType.PRINT, TokenValue.EMPTY, line, position)
-            else -> Token(TokenType.IDENTIFIER, TokenValue(identifier), line, position)
+            "false" -> Token(TokenType.FALSE, null, line, position)
+            "true" -> Token(TokenType.TRUE, null, line, position)
+            "null" -> Token(TokenType.NULL, null, line, position)
+            "var" -> Token(TokenType.VAR, null, line, position)
+            "println" -> Token(TokenType.PRINT, null, line, position)
+            else -> Token(TokenType.IDENTIFIER, identifier, line, position)
         }
     }
 }

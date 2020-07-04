@@ -1,23 +1,27 @@
+/*
+ * Copyright 2020 Aleksey Dobrynin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package one.trifle.lurry.lang
 
-data class Token(val type: TokenType, val value: TokenValue, val line: Int, val position: Int) {
+data class Token(val type: TokenType, val value: Any?, val line: Int, val position: Int) {
     companion object {
-        val NULL = Token(TokenType.NULL, TokenValue.EMPTY, 0, 0)
-        val EOF = Token(TokenType.EOF, TokenValue.EMPTY, 0, 0)
+        val NULL = Token(TokenType.NULL, null, 0, 0)
+        val EOF = Token(TokenType.EOF, null, 0, 0)
     }
 
     override fun toString(): String {
-        return type.toString() + if (!value.isEmpty()) " $value" else ""
-    }
-}
-data class TokenValue(val value: Any?) {
-    companion object{
-        val EMPTY = TokenValue(null)
-    }
-
-    fun isEmpty() = value == null
-
-    override fun toString(): String {
-        return "$value"
+        return type.toString() + if (value != null) " $value" else ""
     }
 }
