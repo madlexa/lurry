@@ -39,5 +39,8 @@ data class VariableExpression(val token: Token) : Expression() {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitVarExpression(this)
 }
 
+data class AssignExpression(val name: Token, val value: Expression) : Expression() {
+    override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitAssignExpression(this)
+}
 
 

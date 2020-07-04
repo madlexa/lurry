@@ -26,6 +26,7 @@ sealed class ExpressionVisitor<T> {
     abstract fun visitGroupingExpression(expr: GroupingExpression): T
     abstract fun visitVarExpression(expr: VariableExpression): T
     abstract fun define(name: String, value: T?)
+    abstract fun visitAssignExpression(expr: AssignExpression): T
 }
 
 class ExpressionInterpreter : ExpressionVisitor<Any?>() {
@@ -121,6 +122,17 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         }
     }
 
+    override fun visitAssignExpression(expr: AssignExpression): Any? {
+        val value = evaluate(expr.value)
+        val distance = locals[expr]
+        if (distance != null) {
+            environment?.assignAt(distance, slots[expr]!!, value)
+        } else {
+            globals[expr.name.value.toString()] = value
+        }
+        return value
+    }
+
     private fun evaluate(expr: Expression): Any? = expr.accept(this)
 
     override fun define(name: String, value: Any?) {
@@ -172,14 +184,22 @@ class ExpressionPrinter : ExpressionVisitor<String>() {
 
     private fun print(expr: Expression): String = expr.accept(this)
 
-    private fun parenthesize(name: String, vararg exprs: Expression): String = StringBuilder().run {
+    override fun define(name: String, value: String?) {}
+
+    override fun visitAssignExpression(expr: AssignExpression): String = parenthesize("=", expr.name, expr.value)
+
+    private fun parenthesize(name: String, vararg parts: Any): String = StringBuilder().run {
         this.append("(")
                 .append(name)
                 .append(" ")
-                .append(exprs.asSequence().map { expr -> print(expr) }.joinToString(" "))
+                .append(parts.asSequence().map { part ->
+                    when (part) {
+                        is Expression -> print(part)
+                        is Token -> part.value
+                        else -> part.toString()
+                    }
+                }.joinToString(" "))
                 .append(")")
                 .toString()
     }
-
-    override fun define(name: String, value: String?) {}
 }

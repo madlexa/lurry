@@ -72,8 +72,18 @@ class Parser(tokens: List<Token>) {
     }
 
     private fun assignment(): Expression {
-        val expr: Expression = or()
-        // TODO EQ
+        var expr: Expression = or()
+        if (reader.peek().type == TokenType.EQUAL) {
+            val equals: Token = reader.peek()
+            reader.next()
+            val value: Expression = assignment()
+            expr = when (expr) {
+                is VariableExpression -> AssignExpression(expr.token, value)
+                // todo GetExpression
+                else -> throw LurryParserException("Invalid assignment target.", equals.line, equals.position)
+            }
+            reader.next()
+        }
         return expr
     }
 
