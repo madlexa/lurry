@@ -1,13 +1,3 @@
-package one.trifle.lurry
-
-import groovy.transform.CompileStatic
-import one.trifle.lurry.connection.DatabaseType
-import org.junit.Test
-
-import javax.sql.DataSource
-import java.sql.Connection
-import java.sql.DatabaseMetaData
-
 /*
  * Copyright 2020 Aleksey Dobrynin
  *
@@ -24,8 +14,21 @@ import java.sql.DatabaseMetaData
  * limitations under the License.
  */
 
-import static junit.framework.TestCase.assertEquals
+package one.trifle.lurry
+
+import groovy.transform.CompileStatic
+import one.trifle.lurry.connection.DatabaseType
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+
+import javax.sql.DataSource
+import java.sql.Connection
+import java.sql.DatabaseMetaData
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.mockito.Mockito.mock
+
+
 import static org.mockito.Mockito.when
 
 @CompileStatic
@@ -43,7 +46,7 @@ class LurrySourceDatabaseTest {
         assertEquals(result.type, DatabaseType.DEFAULT)
     }
 
-    @Test(expected = LurrySqlException)
+    @Test
     void "init null metaData"() {
         // INIT
         def source = mock(DataSource)
@@ -52,7 +55,9 @@ class LurrySourceDatabaseTest {
         when(source.connection).thenReturn(connection)
 
         // EXEC
-        def result = new LurrySourceDatabase(source)
+        Assertions.assertThrows(LurrySqlException.class, {
+            def result = new LurrySourceDatabase(source)
+        })
     }
 
     @Test

@@ -18,9 +18,9 @@ package one.trifle.lurry
 import groovy.transform.CompileStatic
 import one.trifle.lurry.connection.DefaultSafeString
 import one.trifle.lurry.connection.MySqlSafeString
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
-import static junit.framework.TestCase.assertEquals
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 @CompileStatic
 class LQueryTest {

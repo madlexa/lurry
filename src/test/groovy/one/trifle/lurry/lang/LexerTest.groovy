@@ -16,9 +16,9 @@
 package one.trifle.lurry.lang
 
 import groovy.transform.CompileStatic
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
-import static junit.framework.TestCase.assertEquals
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 @CompileStatic
 class LexerTest {

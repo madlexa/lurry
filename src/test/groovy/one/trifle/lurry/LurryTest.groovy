@@ -19,9 +19,9 @@ import groovy.transform.CompileStatic
 import one.trifle.lurry.connection.DatabaseType
 import one.trifle.lurry.connection.LurrySource
 import org.jetbrains.annotations.NotNull
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
-import static junit.framework.TestCase.assertEquals
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 @CompileStatic
 class LurryTest {
