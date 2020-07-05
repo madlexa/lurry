@@ -70,7 +70,7 @@
         <!--TEST-->
         <junit-jupiter.version>5.4.2</junit-jupiter.version>
         <mockito.version>2.0.2-beta</mockito.version>
-        <groovy.version>2.4.12</groovy.version>
+        <groovy.version>3.0.4</groovy.version>
     </properties>
 
     <dependencies>
@@ -121,7 +121,14 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
+            <type>pom</type>
             <version>${groovy.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-testng</artifactId>
+                </exclusion>
+            </exclusions>
             <!--            <scope>test</scope>--> <!--TODO only test-->
         </dependency>
 
@@ -247,29 +254,29 @@
                 </configuration>
             </plugin>
 
-<!--
-            <plugin>
-                <groupId>org.jetbrains.dokka</groupId>
-                <artifactId>dokka-maven-plugin</artifactId>
-                <version>${dokka.version}</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>dokka</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <sourceLinks>
-                        <link>
-                            <dir>${project.basedir}/src/kotlin</dir>
-                            <url>https://github.com/madlexa/lurry</url>
-                        </link>
-                    </sourceLinks>
-                </configuration>
-            </plugin>
--->
+            <!--
+                        <plugin>
+                            <groupId>org.jetbrains.dokka</groupId>
+                            <artifactId>dokka-maven-plugin</artifactId>
+                            <version>${dokka.version}</version>
+                            <executions>
+                                <execution>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>dokka</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                            <configuration>
+                                <sourceLinks>
+                                    <link>
+                                        <dir>${project.basedir}/src/kotlin</dir>
+                                        <url>https://github.com/madlexa/lurry</url>
+                                    </link>
+                                </sourceLinks>
+                            </configuration>
+                        </plugin>
+            -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
