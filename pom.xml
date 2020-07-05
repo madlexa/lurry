@@ -70,7 +70,7 @@
         <!--TEST-->
         <junit-jupiter.version>5.4.2</junit-jupiter.version>
         <mockito.version>2.0.2-beta</mockito.version>
-        <groovy.version>3.0.4</groovy.version>
+        <groovy.version>2.4.12</groovy.version>
     </properties>
 
     <dependencies>
@@ -121,20 +121,19 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <type>pom</type>
             <version>${groovy.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-testng</artifactId>
-                </exclusion>
-            </exclusions>
             <!--            <scope>test</scope>--> <!--TODO only test-->
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
@@ -187,7 +186,6 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
-                                <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                                 <sourceDir>${project.basedir}/src/test/groovy</sourceDir>
                             </sourceDirs>
                         </configuration>
@@ -347,6 +345,11 @@
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
             </plugin>
 
         </plugins>
