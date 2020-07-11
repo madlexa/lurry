@@ -1,4 +1,4 @@
-var test = null
+var test = NULL
 var n1 = 1
 var n2 = (PLUS 1 1)
 println (group n1)

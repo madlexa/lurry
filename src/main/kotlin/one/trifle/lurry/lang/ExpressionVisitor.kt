@@ -269,8 +269,8 @@ class ExpressionPrinter : ExpressionVisitor<String>() {
     override fun visitLogicalExpression(expr: LogicalExpression): String = parenthesize(expr.operation.type.name, expr.left, expr.right)
     override fun visitUnaryExpression(expr: UnaryExpression): String = parenthesize(expr.operation.type.name, expr.expr)
     override fun visitGroupingExpression(expr: GroupingExpression): String = parenthesize("group", expr.expr)
-    override fun visitLiteralExpression(expr: LiteralExpression): String = expr.token.value.toString()
-    override fun visitVarExpression(expr: VariableExpression): String = expr.token.value.toString()
+    override fun visitLiteralExpression(expr: LiteralExpression): String = expr.token.stringValue()
+    override fun visitVarExpression(expr: VariableExpression): String = expr.token.stringValue()
     override fun define(name: String, value: String?) {}
     override fun visitAssignExpression(expr: AssignExpression): String = parenthesize("=", expr.name, expr.value)
     private fun print(expr: Expression): String = expr.accept(this)
@@ -281,11 +281,18 @@ class ExpressionPrinter : ExpressionVisitor<String>() {
                 .append(parts.asSequence().map { part ->
                     when (part) {
                         is Expression -> print(part)
-                        is Token -> part.value
+                        is Token -> part.stringValue()
                         else -> part.toString()
                     }
                 }.joinToString(" "))
                 .append(")")
                 .toString()
+    }
+
+    private fun Token.stringValue(): String = when (type) {
+        TokenType.TRUE -> "TRUE"
+        TokenType.FALSE -> "FALSE"
+        TokenType.NULL -> "NULL"
+        else -> value.toString()
     }
 }
