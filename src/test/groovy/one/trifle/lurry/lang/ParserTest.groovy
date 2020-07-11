@@ -43,7 +43,8 @@ class ParserTest {
     @ParameterizedTest
     @ValueSource(strings = ["literal/number", "literal/string",
             "operation/number", "operation/string",
-            "variable/global"])
+            "operation/boolean", "variable/global"
+    ])
     void test(String name) {
         InputStream code = readResource("${name}.lurry")
         Lexer lexer = new Lexer(code)

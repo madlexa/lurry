@@ -1,0 +1,49 @@
+println(true);
+println(false);
+println(true == false);
+println(true != false);
+println(true == null);
+println(null != false);
+println(null == null);
+println(1 == 1);
+println(1 > 2);
+println(1 < 2);
+println(1 <= 2);
+println(2 <= 2);
+println(3 <= 2);
+println(1 >= 2);
+println(2 >= 2);
+println(3 >= 2);
+println(1 + 2 == 3);
+println(1 + 2 < 3 + 4);
+
+var a = 0.1;
+var b = 0.2;
+var c = null;
+
+println(a == a);
+println(a > a);
+println(a < a);
+println(a >= a);
+println(a <= a);
+println(a == c);
+println(c == c);
+println(null == c);
+println(a == b);
+println(a > b);
+println(a < b);
+println(a >= b);
+println(a <= b);
+
+println(2 + 2 * 2 < 1 + 1 * 0.1);
+println(0.10 == 0.1);
+
+println("test" == "test");
+println("t" + "e" + "s" + "t" == "te" + "st");
+println("test" <= "test");
+println("test" >= "test");
+println("test1" < "test2");
+println("test1" <= "test2");
+println("test1" >= "test2");
+println("test1" > "test2");
+println("string" > "");

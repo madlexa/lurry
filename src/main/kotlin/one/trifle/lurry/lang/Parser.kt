@@ -24,7 +24,6 @@ class Parser(tokens: List<Token>) {
         val statements = ArrayList<Statement>()
         reader.next()
         while (reader.peek() != Token.EOF) {
-//            reader.next()
             statements += declaration()
         }
         return statements
@@ -38,8 +37,7 @@ class Parser(tokens: List<Token>) {
 
     private fun varDeclaration(): Statement {
         if (!reader.testNext(TokenType.IDENTIFIER)) throw LurryParserException("Expect variable name '${reader.peekNext().value}'.", reader.peekNext().line, reader.peekNext().position)
-        val name = reader.peek()
-        reader.next()
+        val name = reader.peekAndNext()
         val value: Expression = if (reader.test(TokenType.EQUAL))
             expression()
         else
@@ -74,8 +72,7 @@ class Parser(tokens: List<Token>) {
     private fun assignment(): Expression {
         var expr: Expression = or()
         if (reader.peek().type == TokenType.EQUAL) {
-            val equals: Token = reader.peek()
-            reader.next()
+            val equals: Token = reader.peekAndNext()
             val value: Expression = assignment()
             expr = when (expr) {
                 is VariableExpression -> AssignExpression(expr.token, value)
@@ -100,22 +97,30 @@ class Parser(tokens: List<Token>) {
     }
 
     private fun equality(): Expression {
-        val expr: Expression = comparison()
-        // TODO BANG_EQUAL, EQUAL_EQUAL
+        var expr: Expression = comparison()
+
+        while (reader.peek().type.includes(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
+            val operator: Token = reader.peekAndNext()
+            val right: Expression = comparison()
+            expr = BinaryExpression(operator, expr, right)
+        }
         return expr
     }
 
     private fun comparison(): Expression {
-        val expr: Expression = addition()
-        // TODO GREATER, GREATER_EQUAL, LESS, LESS_EQUAL
+        var expr: Expression = addition()
+        while (reader.peek().type.includes(TokenType.GREATER, TokenType.LESS, TokenType.GREATER_EQUAL, TokenType.LESS_EQUAL)) {
+            val operator: Token = reader.peekAndNext()
+            val right: Expression = addition()
+            expr = BinaryExpression(operator, expr, right)
+        }
         return expr
     }
 
     private fun addition(): Expression {
         var expr: Expression = multiplication()
-        while (reader.peek().type == TokenType.MINUS || reader.peek().type == TokenType.PLUS) {
-            val operator: Token = reader.peek()
-            reader.next()
+        while (reader.peek().type.includes(TokenType.MINUS, TokenType.PLUS)) {
+            val operator: Token = reader.peekAndNext()
             val right: Expression = multiplication()
             expr = BinaryExpression(operator, expr, right)
         }
@@ -124,9 +129,8 @@ class Parser(tokens: List<Token>) {
 
     private fun multiplication(): Expression {
         var expr: Expression = unary()
-        while (reader.peek().type == TokenType.SLASH || reader.peek().type == TokenType.STAR) {
-            val operator: Token = reader.peek()
-            reader.next()
+        while (reader.peek().type.includes(TokenType.SLASH, TokenType.STAR)) {
+            val operator: Token = reader.peekAndNext()
             val right: Expression = unary()
             expr = BinaryExpression(operator, expr, right)
         }
@@ -136,8 +140,7 @@ class Parser(tokens: List<Token>) {
     private fun unary(): Expression {
         // todo BANG
         if (reader.peek().type == TokenType.MINUS) {
-            val operator: Token = reader.peek()
-            reader.next()
+            val operator: Token = reader.peekAndNext()
             val right: Expression = unary()
             return UnaryExpression(operator, right)
         }
@@ -150,8 +153,6 @@ class Parser(tokens: List<Token>) {
         return expr
     }
 
-    //< Functions call
-    //> primary
     private fun primary(): Expression {
         val expr = when (reader.peek().type) {
             TokenType.FALSE,
@@ -175,6 +176,8 @@ class Parser(tokens: List<Token>) {
         reader.next()
         return expr
     }
+
+    private fun TokenType.includes(vararg types: TokenType): Boolean = types.any { type -> this == type }
 }
 
 private class TokenReader(private val tokens: List<Token>) {
@@ -188,13 +191,14 @@ private class TokenReader(private val tokens: List<Token>) {
 
     fun peek(): Token = current
     fun peekNext(): Token = next
+    fun peekAndNext(): Token = current.apply { next() }
 
     fun next(): Token {
         current = next
-        if (++position < tokens.size) {
-            next = tokens[position]
+        next = if (++position < tokens.size) {
+            tokens[position]
         } else {
-            next = Token.EOF
+            Token.EOF
         }
         return peek()
     }
