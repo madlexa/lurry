@@ -18,15 +18,27 @@ package one.trifle.lurry.lang
 
 class LurryLexerException(message: String,
         // TODO file: String,
-                          line: Int,
-                          position: Int) : RuntimeException(message)
+                          private val line: Int,
+                          private val position: Int) : RuntimeException(message) {
+    override fun toString(): String {
+        return "$message line: $line position $position"
+    }
+}
 
 class LurryParserException(message: String,
         // TODO file: String,
-                           line: Int,
-                           position: Int) : RuntimeException(message)
+                           private val line: Int,
+                           private val position: Int) : RuntimeException(message) {
+    override fun toString(): String {
+        return "$message line: $line position $position"
+    }
+}
 
 class LurryInterpretationException(message: String,
         // TODO file: String,
-                                   line: Int,
-                                   position: Int) : RuntimeException(message)
+                                   private val line: Int,
+                                   private val position: Int) : RuntimeException(message) {
+    override fun toString(): String {
+        return "$message line: $line position $position"
+    }
+}
