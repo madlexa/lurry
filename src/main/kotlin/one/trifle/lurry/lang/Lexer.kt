@@ -35,6 +35,8 @@ class Lexer(source: InputStream) {
                 '!' -> Token(if (reader.testNext('=')) TokenType.BANG_EQUAL else TokenType.BANG, null, reader.line, reader.position)
                 '<' -> Token(if (reader.testNext('=')) TokenType.LESS_EQUAL else TokenType.LESS, null, reader.line, reader.position)
                 '>' -> Token(if (reader.testNext('=')) TokenType.GREATER_EQUAL else TokenType.GREATER, null, reader.line, reader.position)
+                '&' -> Token(if (reader.testNext('&')) TokenType.AND else TokenType.AMPERSAND, null, reader.line, reader.position)
+                '|' -> Token(if (reader.testNext('|')) TokenType.OR else TokenType.VERTICAL_BAR, null, reader.line, reader.position)
                 '"' -> string()
                 '/' -> slash()
                 else -> when {

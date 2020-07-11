@@ -19,6 +19,7 @@ enum class TokenType {
     // Single-character tokens.
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
     COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+    AMPERSAND, VERTICAL_BAR,
 
     // One or two character tokens.
     BANG, BANG_EQUAL,
@@ -26,12 +27,13 @@ enum class TokenType {
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
     INCREMENT, DECREMENT,
+    AND, OR,
 
     // Literals.
     IDENTIFIER, STRING, NUMBER,
 
     // Keywords.
-    AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NULL, OR,
+    CLASS, ELSE, FALSE, FUN, FOR, IF, NULL,
     PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
 
     EOF;

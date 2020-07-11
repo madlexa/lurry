@@ -47,3 +47,16 @@ println("test1" <= "test2");
 println("test1" >= "test2");
 println("test1" > "test2");
 println("string" > "");
+
+println(true || false);
+println(true && false);
+println(true && false || true);
+println(true && true || false);
+
+println(!true);
+println(!false);
+
+println(!(true && false));
+println(!(false || true));
+
+println(!(1 > 0));

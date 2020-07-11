@@ -29,6 +29,7 @@ sealed class ExpressionVisitor<T> {
     abstract fun visitVarExpression(expr: VariableExpression): T
     abstract fun define(name: String, value: T?)
     abstract fun visitAssignExpression(expr: AssignExpression): T
+    abstract fun visitLogicalExpression(expr: LogicalExpression): T
 }
 
 class ExpressionInterpreter : ExpressionVisitor<Any?>() {
@@ -84,6 +85,7 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 is Number -> getNumberInstance(value, value).multiply(value, -1)
                 else -> throw LurryInterpretationException("Unsupported operation MINUS ${value?.javaClass?.name}", expr.operation.line, expr.operation.position)
             }
+            TokenType.BANG -> if (value is Boolean) return !value else throw LurryInterpretationException("Unsupported operation BANG on ${value?.run { this::class.java.name }}", expr.operation.line, expr.operation.position)
             else -> throw LurryInterpretationException("Unsupported operation ${expr.operation.type}", expr.operation.line, expr.operation.position)
         }
     }
@@ -110,6 +112,24 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         } else {
             throw LurryInterpretationException("Undefined variable '$name'", expr.token.line, expr.token.position)
         }
+    }
+
+    override fun visitLogicalExpression(expr: LogicalExpression): Any? = when (expr.operation.type) {
+        TokenType.AND -> evaluate(expr.left).let { value ->
+            if (value !is Boolean) throw LurryInterpretationException("Unsupported operation AND on ${value?.run { this::class.java.name }}", expr.operation.line, expr.operation.position)
+            if (value == false) return@let false
+            val right = evaluate(expr.right)
+            if (right !is Boolean) throw LurryInterpretationException("Unsupported operation AND on ${right?.run { this::class.java.name }}", expr.operation.line, expr.operation.position)
+            return@let right
+        }
+        TokenType.OR -> evaluate(expr.left).let { value ->
+            if (value !is Boolean) throw LurryInterpretationException("Unsupported operation OR on ${value?.run { this::class.java.name }}", expr.operation.line, expr.operation.position)
+            if (value == true) return@let true
+            val right = evaluate(expr.right)
+            if (right !is Boolean) throw LurryInterpretationException("Unsupported operation OR on ${right?.run { this::class.java.name }}", expr.operation.line, expr.operation.position)
+            return@let right
+        }
+        else -> throw LurryInterpretationException("Unsupported operation '${expr.operation.type}'", expr.operation.line, expr.operation.position)
     }
 
     override fun visitAssignExpression(expr: AssignExpression): Any? {
@@ -246,21 +266,14 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
 
 class ExpressionPrinter : ExpressionVisitor<String>() {
     override fun visitBinaryExpression(expr: BinaryExpression): String = parenthesize(expr.operation.type.name, expr.left, expr.right)
-
+    override fun visitLogicalExpression(expr: LogicalExpression): String = parenthesize(expr.operation.type.name, expr.left, expr.right)
     override fun visitUnaryExpression(expr: UnaryExpression): String = parenthesize(expr.operation.type.name, expr.expr)
-
     override fun visitGroupingExpression(expr: GroupingExpression): String = parenthesize("group", expr.expr)
-
     override fun visitLiteralExpression(expr: LiteralExpression): String = expr.token.value.toString()
-
     override fun visitVarExpression(expr: VariableExpression): String = expr.token.value.toString()
-
-    private fun print(expr: Expression): String = expr.accept(this)
-
     override fun define(name: String, value: String?) {}
-
     override fun visitAssignExpression(expr: AssignExpression): String = parenthesize("=", expr.name, expr.value)
-
+    private fun print(expr: Expression): String = expr.accept(this)
     private fun parenthesize(name: String, vararg parts: Any): String = StringBuilder().run {
         this.append("(")
                 .append(name)

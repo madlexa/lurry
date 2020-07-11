@@ -85,14 +85,22 @@ class Parser(tokens: List<Token>) {
     }
 
     private fun or(): Expression {
-        val expr: Expression = and()
-        // TODO OR
+        var expr: Expression = and()
+        while (reader.peek().type.includes(TokenType.OR)) {
+            val operator: Token = reader.peekAndNext()
+            val right: Expression = and()
+            expr = LogicalExpression(operator, expr, right)
+        }
         return expr
     }
 
     private fun and(): Expression {
-        val expr: Expression = equality()
-        // TODO AND
+        var expr: Expression = equality()
+        while (reader.peek().type.includes(TokenType.AND)) {
+            val operator: Token = reader.peekAndNext()
+            val right: Expression = equality()
+            expr = LogicalExpression(operator, expr, right)
+        }
         return expr
     }
 
@@ -138,8 +146,7 @@ class Parser(tokens: List<Token>) {
     }
 
     private fun unary(): Expression {
-        // todo BANG
-        if (reader.peek().type == TokenType.MINUS) {
+        if (reader.peek().type.includes(TokenType.MINUS, TokenType.BANG)) {
             val operator: Token = reader.peekAndNext()
             val right: Expression = unary()
             return UnaryExpression(operator, right)
