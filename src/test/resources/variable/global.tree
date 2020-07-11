@@ -1,6 +1,6 @@
 var test = null
 var n1 = 1
-var n2 = 2
+var n2 = (PLUS 1 1)
 println (group n1)
 println (group n2)
 println (group (PLUS result= (group (PLUS n1 n2))))

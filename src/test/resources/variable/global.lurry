@@ -1,6 +1,6 @@
 var test;
 var n1 = 1;
-var n2 = 2;
+var n2 = 1 + 1;
 println(n1);
 println(n2);
 println("result=" + (n1+n2));
