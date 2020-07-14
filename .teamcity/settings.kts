@@ -72,6 +72,12 @@ object Distributive : BuildType({
             jdkHome = "%env.JDK_1_8_x64%"
         }
     }
+
+    dependencies {
+        snapshot(Test) {
+            onDependencyFailure = FailureAction.CANCEL
+        }
+    }
 })
 
 object Test : BuildType({
