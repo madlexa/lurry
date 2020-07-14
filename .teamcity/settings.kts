@@ -55,9 +55,7 @@ object Distributive : BuildType({
     name = "Distributive"
 
     artifactRules = """
-        target/lurry-%maven.project.version%.jar => lurry-%maven.project.version%.jar
-        target/lurry-%maven.project.version%-sources.jar => lurry-%maven.project.version%-sources.jar
-        target/lurry-%maven.project.version%-javadoc.jar => lurry-%maven.project.version%-javadoc.jar
+        target/lurry-*.jar => .
     """.trimIndent()
     buildNumberPattern = "%maven.project.version%"
 
@@ -70,6 +68,7 @@ object Distributive : BuildType({
             name = "Packaging"
             goals = "clean package"
             jdkHome = "%env.JDK_1_8_x64%"
+            runnerArgs = "-DskipTests=false"
         }
     }
 
