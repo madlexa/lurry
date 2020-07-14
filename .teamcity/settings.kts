@@ -68,7 +68,7 @@ object Distributive : BuildType({
             name = "Packaging"
             goals = "clean package"
             jdkHome = "%env.JDK_1_8_x64%"
-            runnerArgs = "-DskipTests=false"
+            runnerArgs = "-DskipTests=true"
         }
     }
 
