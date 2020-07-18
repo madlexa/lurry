@@ -1,0 +1,22 @@
+(block)
+(block
+var a = 1
+println (group a))
+var b = 2
+(block
+var b = 3
+println (group b))
+println (group b)
+var c = outer
+(block
+var c = inner 1
+(block
+var c = inner 2
+(block
+var c = inner 3
+(block
+println (group c))
+println (group c))
+println (group c))
+println (group c))
+println (group c)

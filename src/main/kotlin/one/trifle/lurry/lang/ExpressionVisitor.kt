@@ -17,8 +17,6 @@ package one.trifle.lurry.lang
 
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.reflect.jvm.jvmName
 
 sealed class ExpressionVisitor<T> {
@@ -30,13 +28,11 @@ sealed class ExpressionVisitor<T> {
     abstract fun define(name: String, value: T?)
     abstract fun visitAssignExpression(expr: AssignExpression): T
     abstract fun visitLogicalExpression(expr: LogicalExpression): T
+    abstract fun <R> visitBlock(block: () -> R): R
 }
 
 class ExpressionInterpreter : ExpressionVisitor<Any?>() {
-    private val globals: MutableMap<String, Any?> = HashMap()
-    private val environment: Environment? = null
-    private val locals: MutableMap<Expression, Int> = HashMap<Expression, Int>()
-    private val slots: MutableMap<Expression, Int> = HashMap<Expression, Int>()
+    private var environment: Environment? = null
 
     override fun visitBinaryExpression(expr: BinaryExpression): Any? {
         val left: Any? = evaluate(expr.left)
@@ -101,18 +97,7 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
 
     override fun visitGroupingExpression(expr: GroupingExpression): Any? = evaluate(expr.expr)
 
-    override fun visitVarExpression(expr: VariableExpression): Any? {
-        val distance = locals[expr]
-        if (distance != null) {
-            return environment?.getAt(distance, slots[expr]!!)
-        }
-        val name = expr.token.value.toString()
-        if (globals.containsKey(name)) {
-            return globals[name]
-        } else {
-            throw LurryInterpretationException("Undefined variable '$name'", expr.token.line, expr.token.position)
-        }
-    }
+    override fun visitVarExpression(expr: VariableExpression): Any? = environment?.getAt(expr)
 
     override fun visitLogicalExpression(expr: LogicalExpression): Any? = when (expr.operation.type) {
         TokenType.AND -> evaluate(expr.left).let { value ->
@@ -134,49 +119,48 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
 
     override fun visitAssignExpression(expr: AssignExpression): Any? {
         val value = evaluate(expr.value)
-        val distance = locals[expr]
-        if (distance != null) {
-            environment?.assignAt(distance, slots[expr]!!, value)
-        } else {
-            globals[expr.name.value.toString()] = value
-        }
+        environment?.assignAt(expr, value)
         return value
     }
 
     private fun evaluate(expr: Expression): Any? = expr.accept(this)
 
     override fun define(name: String, value: Any?) {
-        if (environment != null) {
-            environment.define(value)
-        } else {
-            globals[name] = value
+        if (environment == null) {
+            environment = Environment(null)
         }
+        environment!!.define(name, value)
     }
 
-    companion object {
-        private class Environment(private val enclosing: Environment? = null) {
-            private val values: MutableList<Any?> = ArrayList()
-            fun define(value: Any?) {
-                this.values += value
-            }
+    private class Environment(private val enclosing: Environment? = null) {
+        private val variables: MutableMap<String, Any?> = HashMap()
+        fun define(name: String, value: Any?) {
+            variables[name] = value
+        }
 
-            fun getAt(distance: Int, slot: Int): Any? {
-                var environment: Environment? = this
-                for (i in 0 until distance) {
-                    environment = environment?.enclosing
+        fun getAt(expr: VariableToken): Any? {
+            val name = expr.name.value as String
+            var environment: Environment? = this
+            while (environment != null) {
+                if (environment.variables.containsKey(name)) {
+                    return environment.variables[name]
                 }
-                return environment?.values?.get(slot)
+                environment = environment.enclosing
             }
+            throw LurryInterpretationException("Undefined variable '${name}'", expr.name.line, expr.name.position)
+        }
 
-            fun assignAt(distance: Int, slot: Int, value: Any?) {
-                var environment: Environment? = this
-                for (i in 0 until distance) {
-                    environment = environment?.enclosing
+        fun assignAt(expr: VariableToken, value: Any?) {
+            val name = expr.name.value as String
+            var environment: Environment? = this
+            while (environment != null) {
+                if (environment.variables.containsKey(name)) {
+                    environment.variables[name] = value
+                    return
                 }
-                environment?.values?.set(slot, value)
+                environment = environment.enclosing
             }
-
-            override fun toString(): String = values.toString() + (enclosing?.run { " -> $this" } ?: "")
+            throw LurryInterpretationException("Undefined variable '${name}'", expr.name.line, expr.name.position)
         }
     }
 
@@ -262,15 +246,25 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         override fun divide(left: Number, right: Number): BigDecimal = eval(left, right) { l, r -> l / r }
         override fun compareTo(left: Number, right: Number): Int = eval(left, right) { l, r -> l.compareTo(r) }
     }
+
+    override fun <R> visitBlock(block: () -> R): R {
+        val last = environment
+        try {
+            environment = Environment(last)
+            return block()
+        } finally {
+            environment = last
+        }
+    }
 }
 
-class ExpressionPrinter : ExpressionVisitor<String>() {
+object ExpressionPrinter : ExpressionVisitor<String>() {
     override fun visitBinaryExpression(expr: BinaryExpression): String = parenthesize(expr.operation.type.name, expr.left, expr.right)
     override fun visitLogicalExpression(expr: LogicalExpression): String = parenthesize(expr.operation.type.name, expr.left, expr.right)
     override fun visitUnaryExpression(expr: UnaryExpression): String = parenthesize(expr.operation.type.name, expr.expr)
     override fun visitGroupingExpression(expr: GroupingExpression): String = parenthesize("group", expr.expr)
     override fun visitLiteralExpression(expr: LiteralExpression): String = expr.token.stringValue()
-    override fun visitVarExpression(expr: VariableExpression): String = expr.token.stringValue()
+    override fun visitVarExpression(expr: VariableExpression): String = expr.name.stringValue()
     override fun define(name: String, value: String?) {}
     override fun visitAssignExpression(expr: AssignExpression): String = parenthesize("=", expr.name, expr.value)
     private fun print(expr: Expression): String = expr.accept(this)
@@ -295,4 +289,6 @@ class ExpressionPrinter : ExpressionVisitor<String>() {
         TokenType.NULL -> "NULL"
         else -> value.toString()
     }
+
+    override fun <R> visitBlock(block: () -> R): R = block()
 }

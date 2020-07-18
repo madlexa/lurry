@@ -43,7 +43,8 @@ class ParserTest {
     @ParameterizedTest
     @ValueSource(strings = ["literal/number", "literal/string",
             "operation/number", "operation/string",
-            "operation/boolean", "variable/global"
+            "operation/boolean", "variable/global",
+            "block/block"
     ])
     void test(String name) {
         InputStream code = readResource("${name}.lurry")
@@ -51,7 +52,7 @@ class ParserTest {
         Parser parser = new Parser(lexer.tokenize())
         List<Statement> expressions = parser.parse()
 
-        def ast = new StatementPrinter(new ExpressionPrinter()).print(expressions)
+        def ast = new StatementPrinter(ExpressionPrinter.INSTANCE).print(expressions)
         InputStream tree = readResource("${name}.tree")
         assertEquals(tree.text, ast)
 

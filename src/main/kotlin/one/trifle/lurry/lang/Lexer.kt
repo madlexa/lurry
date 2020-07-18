@@ -26,6 +26,8 @@ class Lexer(source: InputStream) {
             val token: Token? = when (val ch = reader.peek()) {
                 '(' -> Token(TokenType.LEFT_PAREN, null, reader.line, reader.position)
                 ')' -> Token(TokenType.RIGHT_PAREN, null, reader.line, reader.position)
+                '{' -> Token(TokenType.LEFT_BRACE, null, reader.line, reader.position)
+                '}' -> Token(TokenType.RIGHT_BRACE, null, reader.line, reader.position)
                 '-' -> Token(TokenType.MINUS, null, reader.line, reader.position)
                 '+' -> Token(TokenType.PLUS, null, reader.line, reader.position)
                 '*' -> Token(TokenType.STAR, null, reader.line, reader.position)
@@ -71,7 +73,7 @@ class Lexer(source: InputStream) {
                     'r' -> '\r'
                     '"' -> '\"'
                     '\'' -> '\''
-                    else -> nextCh // TODO
+                    else -> nextCh // TODO other escaped
                 }
                 reader.next()
                 buffer.append(ch)
@@ -106,9 +108,9 @@ class Lexer(source: InputStream) {
         }
         val number: String = buffer.toString()
         val value: Number = if (number.contains('.')) {
-            number.toDouble() // todo
+            number.toDouble() // todo float
         } else {
-            number.toInt() // todo
+            number.toInt() // todo long/char/...
         }
 
         return Token(TokenType.NUMBER, value, line, position)

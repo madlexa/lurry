@@ -48,8 +48,24 @@ class Parser(tokens: List<Token>) {
 
     private fun statement(): Statement = when (reader.peek().type) {
         TokenType.PRINT -> printStatement()
-        // todo FOR/IF/RETURN/WHILE/LEFT_BRACE
+        TokenType.IF -> TODO() //ifStatement()
+        TokenType.FOR -> TODO() //forStatement()
+        TokenType.RETURN -> TODO() //returnStatement()
+        TokenType.WHILE -> TODO() //whileStatement()
+        TokenType.LEFT_BRACE -> BlockStatement(block())
         else -> expressionStatement()
+    }
+
+    private fun block(): List<Statement> {
+        reader.next()
+        val statements: MutableList<Statement> = ArrayList()
+        while (!reader.peek().type.includes(TokenType.RIGHT_BRACE, TokenType.EOF)) {
+            statements += declaration()
+        }
+        if (!reader.test(TokenType.RIGHT_BRACE)) {
+            throw LurryParserException("Expect '}' after block.", reader.peek().line, reader.peek().position)
+        }
+        return statements
     }
 
     private fun printStatement(): Statement {
@@ -75,7 +91,7 @@ class Parser(tokens: List<Token>) {
             val equals: Token = reader.peekAndNext()
             val value: Expression = assignment()
             expr = when (expr) {
-                is VariableExpression -> AssignExpression(expr.token, value)
+                is VariableExpression -> AssignExpression(expr.name, value)
                 // todo GetExpression
                 else -> throw LurryParserException("Invalid assignment target.", equals.line, equals.position)
             }

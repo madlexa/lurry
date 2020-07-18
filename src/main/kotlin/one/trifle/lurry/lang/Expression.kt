@@ -35,11 +35,15 @@ data class GroupingExpression(val expr: Expression) : Expression() {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitGroupingExpression(this)
 }
 
-data class VariableExpression(val token: Token) : Expression() {
+interface VariableToken {
+    val name: Token
+}
+
+data class VariableExpression(override val name: Token) : Expression(), VariableToken {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitVarExpression(this)
 }
 
-data class AssignExpression(val name: Token, val value: Expression) : Expression() {
+data class AssignExpression(override val name: Token, val value: Expression) : Expression(), VariableToken {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitAssignExpression(this)
 }
 

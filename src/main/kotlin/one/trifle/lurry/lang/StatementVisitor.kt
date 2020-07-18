@@ -19,6 +19,7 @@ sealed class StatementVisitor<T>(val visitor: ExpressionVisitor<T>) {
     abstract fun visitExpressionStatement(stmt: ExpressionStatement): T
     abstract fun visitVarStatement(stmt: VarStatement): T
     abstract fun visitPrintStatement(stmt: PrintStatement): T
+    abstract fun visitBlockStatement(stmt: BlockStatement): T
 }
 
 class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<Any?>(visitor) {
@@ -30,17 +31,26 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
         return result
     }
 
-    private fun execute(stmt: Statement): Any? = stmt.accept(this)
-
     override fun visitExpressionStatement(stmt: ExpressionStatement): Any? = evaluate(stmt.expression)
 
     override fun visitVarStatement(stmt: VarStatement): Unit = visitor.define(stmt.name.value.toString(), evaluate(stmt.initializer))
 
-    private fun evaluate(expression: Expression): Any? = expression.accept(visitor)
     override fun visitPrintStatement(stmt: PrintStatement): Any? {
         println(evaluate(stmt.expression))
         return null
     }
+
+    override fun visitBlockStatement(stmt: BlockStatement): Any? {
+        visitor.visitBlock {
+            stmt.statements.forEach { statement ->
+                execute(statement)
+            }
+        }
+        return null
+    }
+
+    private fun execute(stmt: Statement): Any? = stmt.accept(this)
+    private fun evaluate(expression: Expression): Any? = expression.accept(visitor)
 }
 
 class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(visitor) {
@@ -64,4 +74,6 @@ class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(vi
     }
 
     override fun visitPrintStatement(stmt: PrintStatement): String = parenthesize("println", stmt.expression)
+    override fun visitBlockStatement(stmt: BlockStatement): String =
+            "(block${stmt.statements.joinToString(separator = "") { statement -> "\n" + statement.accept(this) }})"
 }

@@ -1,4 +1,4 @@
-println "test";
-println "1 str";
-println "\"\n'str'\\";
-println "println \"str\"";
+println "test"; // test
+println "1 str"; // 1 str
+println "\"\n'str'\\"; // "\n'str'\
+println "println \"str\""; // println "str"
