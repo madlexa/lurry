@@ -1,6 +1,6 @@
 println (MINUS 1001)
-println 0
-println 1001
+println (group 0)
+println (group 1001)
 println 1234.21
 println (MINUS 0.21)
 println 0.0

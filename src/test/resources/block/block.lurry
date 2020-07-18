@@ -1,31 +1,31 @@
 {}
 
 {
-    var a = 1;
-    println(a); // 1
+    var a = 1
+    println(a) // 1
 }
 
-var b = 2;
+var b = 2
 {
-    var b = 3;
-    println(b); // 3
+    var b = 3
+    println(b) // 3
 }
-println(b); // 2
+println(b) // 2
 
-var c = "outer";
+var c = "outer"
 {
-    var c = "inner 1";
+    var c = "inner 1"
     {
-        var c = "inner 2";
+        var c = "inner 2"
         {
-            var c = "inner 3";
+            var c = "inner 3"
             {
-                println(c); // inner 3
+                println(c) // inner 3
             }
-            println(c); // inner 3
+            println(c) // inner 3
         }
-        println(c); // inner 2
+        println(c) // inner 2
     }
-    println(c); // inner 1
+    println(c) // inner 1
 }
-println(c); // outer
+println(c) // outer

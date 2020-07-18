@@ -1,9 +1,9 @@
-import package.Person;
-import package.Contact;
-import package.ContactType;
+import package.Person
+import package.Contact
+import package.ContactType
 
-return(person_id): new Person(#person_id, #person_name, contacts(), #income - #expense);
+return(person_id): new Person(#person_id, #person_name, contacts(), #income - #expense)
 contacts(contact_id, contact_type): new Contact(#contact_id, {
-        var type = ContactType.of(#contact_type);
-        return type;
-    }, #contact_value);
+        var type = ContactType.of(#contact_type)
+        return type
+    }, #contact_value)

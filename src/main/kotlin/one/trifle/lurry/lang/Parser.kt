@@ -42,7 +42,7 @@ class Parser(tokens: List<Token>) {
             expression()
         else
             LiteralExpression(Token.NULL)
-        if (!reader.test(TokenType.SEMICOLON)) throw LurryParserException("Expect ';' after variable declaration", reader.peek().line, reader.peek().position)
+        reader.test(TokenType.SEMICOLON)
         return VarStatement(name, value)
     }
 
@@ -71,7 +71,7 @@ class Parser(tokens: List<Token>) {
     private fun printStatement(): Statement {
         reader.next()
         val value: Expression = expression()
-        if (!reader.test(TokenType.SEMICOLON)) throw LurryParserException("Expect ';' after value.", reader.peek().line, reader.peek().position)
+        reader.test(TokenType.SEMICOLON)
         return PrintStatement(value)
     }
 
@@ -106,7 +106,6 @@ class Parser(tokens: List<Token>) {
                 // todo GetExpression
                 else -> throw LurryParserException("Invalid assignment target.", equals.line, equals.position)
             }
-            reader.next()
         }
         return expr
     }

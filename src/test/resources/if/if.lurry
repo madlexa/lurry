@@ -1,29 +1,29 @@
 if(true) {
-    println(1); // 1
+    println(1) // 1
 }
 
 if(1 == 1) {
-    println(2); // 2
+    println(2) // 2
 }
 
 if(1 > 1) {
-    println(3); // ignore
+    println(3) // ignore
 }
 
 if(1 > 1) {
-    println(4); // ignore
+    println(4) // ignore
 } else {
-    println(5); // 5
+    println(5) // 5
 }
 
 if(1 > 2) {
-    println(6); // ignore
+    println(6) // ignore
 } else if (2 > 3) {
-    println(7); // ignore
+    println(7) // ignore
 } else if (2 == 2) {
-    println(8); // 8
+    println(8) // 8
 } else if (3 == 3) {
-    println(9); // ignore
+    println(9) // ignore
 } else {
-    println(10); // ignore
+    println(10) // ignore
 }
