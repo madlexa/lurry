@@ -27,8 +27,6 @@ import java.sql.DatabaseMetaData
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 import static org.mockito.Mockito.mock
-
-
 import static org.mockito.Mockito.when
 
 @CompileStatic
@@ -56,7 +54,7 @@ class LurrySourceDatabaseTest {
 
         // EXEC
         Assertions.assertThrows(LurrySqlException.class, {
-            def result = new LurrySourceDatabase(source)
+            new LurrySourceDatabase(source)
         })
     }
 

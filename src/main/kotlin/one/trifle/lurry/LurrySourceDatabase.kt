@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Aleksey Dobrynin
+ * Copyright 2020 Aleksey Dobrynin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import org.slf4j.LoggerFactory
 import javax.sql.DataSource
 
 class LurrySourceDatabase(private val source: DataSource) : LurrySource {
-    private val LOGGER = LoggerFactory.getLogger(LurrySourceDatabase::class.java)
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(LurrySourceDatabase::class.java)
+    }
 
     override val type: DatabaseType = source.connection.use { conn ->
         val metaData = conn.metaData
