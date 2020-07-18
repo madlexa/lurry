@@ -31,6 +31,10 @@ class PrintStatement(val expression: Expression) : Statement() {
     override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitPrintStatement(this)
 }
 
+class IfStatement(val condition: Expression, val than: Statement, val `else`: Statement?) : Statement() {
+    override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitIfStatement(this)
+}
+
 class BlockStatement(val statements: List<Statement>) : Statement() {
     override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitBlockStatement(this)
 }

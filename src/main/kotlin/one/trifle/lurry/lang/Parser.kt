@@ -48,7 +48,7 @@ class Parser(tokens: List<Token>) {
 
     private fun statement(): Statement = when (reader.peek().type) {
         TokenType.PRINT -> printStatement()
-        TokenType.IF -> TODO() //ifStatement()
+        TokenType.IF -> ifStatement()
         TokenType.FOR -> TODO() //forStatement()
         TokenType.RETURN -> TODO() //returnStatement()
         TokenType.WHILE -> TODO() //whileStatement()
@@ -73,6 +73,17 @@ class Parser(tokens: List<Token>) {
         val value: Expression = expression()
         if (!reader.test(TokenType.SEMICOLON)) throw LurryParserException("Expect ';' after value.", reader.peek().line, reader.peek().position)
         return PrintStatement(value)
+    }
+
+    private fun ifStatement(): Statement {
+        reader.next()
+        val condition: Expression = expression()
+        val then: Statement = statement()
+        var `else`: Statement? = null
+        if (reader.test(TokenType.ELSE)) {
+            `else` = statement()
+        }
+        return IfStatement(condition, then, `else`)
     }
 
     private fun expressionStatement(): Statement {

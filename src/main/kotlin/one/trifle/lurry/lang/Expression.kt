@@ -15,23 +15,23 @@
  */
 package one.trifle.lurry.lang
 
-sealed class Expression {
+sealed class Expression(val line: Int, val position: Int) {
     abstract fun <T> accept(visitor: ExpressionVisitor<T>): T
 }
 
-data class LiteralExpression(val token: Token) : Expression() {
+data class LiteralExpression(val token: Token) : Expression(token.line, token.position) {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitLiteralExpression(this)
 }
 
-data class BinaryExpression(val operation: Token, val left: Expression, val right: Expression) : Expression() {
+data class BinaryExpression(val operation: Token, val left: Expression, val right: Expression) : Expression(operation.line, operation.position) {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitBinaryExpression(this)
 }
 
-data class UnaryExpression(val operation: Token, val expr: Expression) : Expression() {
+data class UnaryExpression(val operation: Token, val expr: Expression) : Expression(operation.line, operation.position) {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitUnaryExpression(this)
 }
 
-data class GroupingExpression(val expr: Expression) : Expression() {
+data class GroupingExpression(val expr: Expression) : Expression(expr.line, expr.position) {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitGroupingExpression(this)
 }
 
@@ -39,14 +39,14 @@ interface VariableToken {
     val name: Token
 }
 
-data class VariableExpression(override val name: Token) : Expression(), VariableToken {
+data class VariableExpression(override val name: Token) : Expression(name.line, name.position), VariableToken {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitVarExpression(this)
 }
 
-data class AssignExpression(override val name: Token, val value: Expression) : Expression(), VariableToken {
+data class AssignExpression(override val name: Token, val value: Expression) : Expression(name.line, name.position), VariableToken {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitAssignExpression(this)
 }
 
-data class LogicalExpression(val operation: Token, val left: Expression, val right: Expression) : Expression() {
+data class LogicalExpression(val operation: Token, val left: Expression, val right: Expression) : Expression(operation.line, operation.position) {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitLogicalExpression(this)
 }

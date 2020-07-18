@@ -1,0 +1,39 @@
+(if (group TRUE)
+than: (block
+println (group 1))
+else: null
+)
+(if (group (EQUAL_EQUAL 1 1))
+than: (block
+println (group 2))
+else: null
+)
+(if (group (GREATER 1 1))
+than: (block
+println (group 3))
+else: null
+)
+(if (group (GREATER 1 1))
+than: (block
+println (group 4))
+else: (block
+println (group 5))
+)
+(if (group (GREATER 1 2))
+than: (block
+println (group 6))
+else: (if (group (GREATER 2 3))
+than: (block
+println (group 7))
+else: (if (group (EQUAL_EQUAL 2 2))
+than: (block
+println (group 8))
+else: (if (group (EQUAL_EQUAL 3 3))
+than: (block
+println (group 9))
+else: (block
+println (group 10))
+)
+)
+)
+)

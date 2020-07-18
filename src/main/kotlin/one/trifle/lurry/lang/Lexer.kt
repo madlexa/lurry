@@ -130,6 +130,8 @@ class Lexer(source: InputStream) {
             "null" -> Token(TokenType.NULL, null, line, position)
             "var" -> Token(TokenType.VAR, null, line, position)
             "println" -> Token(TokenType.PRINT, null, line, position)
+            "if" -> Token(TokenType.IF, null, line, position)
+            "else" -> Token(TokenType.ELSE, null, line, position)
             else -> Token(TokenType.IDENTIFIER, identifier, line, position)
         }
     }

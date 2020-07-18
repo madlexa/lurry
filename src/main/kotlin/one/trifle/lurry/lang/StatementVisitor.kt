@@ -20,6 +20,7 @@ sealed class StatementVisitor<T>(val visitor: ExpressionVisitor<T>) {
     abstract fun visitVarStatement(stmt: VarStatement): T
     abstract fun visitPrintStatement(stmt: PrintStatement): T
     abstract fun visitBlockStatement(stmt: BlockStatement): T
+    abstract fun visitIfStatement(stmt: IfStatement): T
 }
 
 class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<Any?>(visitor) {
@@ -51,6 +52,17 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
 
     private fun execute(stmt: Statement): Any? = stmt.accept(this)
     private fun evaluate(expression: Expression): Any? = expression.accept(visitor)
+    override fun visitIfStatement(stmt: IfStatement): Any? {
+        val condition = evaluate(stmt.condition)
+        if (condition !is Boolean) throw LurryInterpretationException("Expected boolean condition. Actual: [${condition?.let { this::class.simpleName } ?: "NULL"}]", stmt.condition.line, stmt.condition.position)
+        return if (condition) {
+            execute(stmt.than)
+        } else if (stmt.`else` != null) {
+            execute(stmt.`else`)
+        } else {
+            null
+        }
+    }
 }
 
 class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(visitor) {
@@ -76,4 +88,10 @@ class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(vi
     override fun visitPrintStatement(stmt: PrintStatement): String = parenthesize("println", stmt.expression)
     override fun visitBlockStatement(stmt: BlockStatement): String =
             "(block${stmt.statements.joinToString(separator = "") { statement -> "\n" + statement.accept(this) }})"
+
+    override fun visitIfStatement(stmt: IfStatement): String =
+            """(if ${stmt.condition.accept(visitor)}
+                |than: ${stmt.than.accept(this)}
+                |else: ${stmt.`else`?.accept(this)}
+                |)""".trimMargin()
 }
