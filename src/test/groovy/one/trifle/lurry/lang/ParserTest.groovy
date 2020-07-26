@@ -40,7 +40,7 @@ class ParserTest {
         System.out = standardOutput
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "test({0})")
     @ValueSource(strings = ["literal/number", "literal/string",
             "operation/number", "operation/string",
             "operation/boolean", "variable/global",
