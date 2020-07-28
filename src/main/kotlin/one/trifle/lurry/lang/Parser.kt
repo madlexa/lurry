@@ -226,14 +226,13 @@ private class TokenReader(private val tokens: List<Token>) {
     fun peekNext(): Token = next
     fun peekAndNext(): Token = current.apply { next() }
 
-    fun next(): Token {
+    fun next() {
         current = next
         next = if (++position < tokens.size) {
             tokens[position]
         } else {
             Token.EOF
         }
-        return peek()
     }
 
     fun testNext(type: TokenType): Boolean {
