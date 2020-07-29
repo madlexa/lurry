@@ -49,9 +49,9 @@ class Parser(tokens: List<Token>) {
     private fun statement(): Statement = when (reader.peek().type) {
         TokenType.PRINT -> printStatement()
         TokenType.IF -> ifStatement()
-        TokenType.FOR -> TODO() //forStatement()
-        TokenType.RETURN -> TODO() //returnStatement()
-        TokenType.WHILE -> TODO() //whileStatement()
+        TokenType.FOR -> forStatement()
+        TokenType.RETURN -> returnStatement()
+        TokenType.WHILE -> whileStatement()
         TokenType.LEFT_BRACE -> blockStatement()
         else -> expressionStatement()
     }
@@ -71,6 +71,12 @@ class Parser(tokens: List<Token>) {
         reader.next()
         return BlockStatement(block())
     }
+
+    private fun forStatement(): Statement = TODO()
+
+    private fun returnStatement(): Statement = TODO()
+
+    private fun whileStatement(): Statement = TODO()
 
     private fun printStatement(): Statement {
         reader.next()
