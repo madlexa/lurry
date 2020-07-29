@@ -52,12 +52,11 @@ class Parser(tokens: List<Token>) {
         TokenType.FOR -> TODO() //forStatement()
         TokenType.RETURN -> TODO() //returnStatement()
         TokenType.WHILE -> TODO() //whileStatement()
-        TokenType.LEFT_BRACE -> BlockStatement(block())
+        TokenType.LEFT_BRACE -> blockStatement()
         else -> expressionStatement()
     }
 
     private fun block(): List<Statement> {
-        reader.next()
         val statements: MutableList<Statement> = ArrayList()
         while (!reader.peek().type.includes(TokenType.RIGHT_BRACE, TokenType.EOF)) {
             statements += declaration()
@@ -66,6 +65,11 @@ class Parser(tokens: List<Token>) {
             throw LurryParserException("Expect '}' after block.", reader.peek().line, reader.peek().position)
         }
         return statements
+    }
+
+    private fun blockStatement(): Statement {
+        reader.next()
+        return BlockStatement(block())
     }
 
     private fun printStatement(): Statement {
