@@ -98,7 +98,7 @@ class Lexer(source: InputStream) {
             ch = reader.next()
             buffer.append(ch)
         }
-        if (reader.peekNext() == '.' || reader.peekNext().isDigit()) {
+        if (reader.peekNext() == '.') {
             reader.next()
             buffer.append(reader.peek())
             while (reader.peekNext().isDigit()) {
