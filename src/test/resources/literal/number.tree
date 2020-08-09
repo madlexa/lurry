@@ -5,3 +5,9 @@ println 1234.21
 println (MINUS 0.21)
 println 0.0
 println (MINUS 0.0)
+println (MINUS 0.0)
+println (MINUS 0.21)
+println 1234.21
+println 1234000000000.00000000000000000021
+println 21474836470
+println 19223372036854775807

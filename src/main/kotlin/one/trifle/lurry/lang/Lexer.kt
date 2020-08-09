@@ -106,11 +106,20 @@ class Lexer(source: InputStream) {
                 buffer.append(ch)
             }
         }
+
         val number: String = buffer.toString()
-        val value: Number = if (number.contains('.')) {
-            number.toDouble() // todo float
-        } else {
-            number.toInt() // todo long/char/...
+        val value: Number = when {
+            number.contains('.') -> {
+                when {
+                    reader.testNext('f', 'F') -> number.toFloat()
+                    reader.testNext('b', 'B') -> number.toBigDecimal()
+                    else -> number.toDouble()
+                }
+            }
+            reader.testNext('l', 'L') -> number.toLong()
+            reader.testNext('b', 'B') -> number.toBigInteger()
+            reader.testNext('f', 'F') -> number.toFloat()
+            else -> number.toInt()
         }
 
         return Token(TokenType.NUMBER, value, line, position)
@@ -172,8 +181,8 @@ private class CharReader(private val source: ByteIterator) {
         return peek()
     }
 
-    fun testNext(ch: Char): Boolean {
-        if (next == ch) {
+    fun testNext(vararg chars: Char): Boolean {
+        if (chars.any { ch -> ch == next }) {
             next()
             return true
         }
