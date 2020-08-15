@@ -9,4 +9,6 @@
     println(n1)
     var str = "string"
     println(str + "=" + n1)
+    n1 = n2 = 42
+    println(n1 + "=" + n2)
 }
