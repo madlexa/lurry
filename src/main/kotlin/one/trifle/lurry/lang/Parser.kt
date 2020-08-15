@@ -15,8 +15,6 @@
  */
 package one.trifle.lurry.lang
 
-import java.util.*
-
 class Parser(tokens: List<Token>) {
     private val reader = TokenReader(tokens)
 
@@ -24,9 +22,14 @@ class Parser(tokens: List<Token>) {
         val statements = ArrayList<Statement>()
         reader.next()
         while (reader.peek() != Token.EOF) {
-            statements += declaration()
+            statements += mapper()
         }
         return statements
+    }
+
+    private fun mapper(): Statement = when (reader.peek().type) {
+        TokenType.IDENTIFIER -> mapperDeclaration()
+        else -> declaration()
     }
 
     private fun declaration(): Statement = when (reader.peek().type) {
@@ -44,6 +47,26 @@ class Parser(tokens: List<Token>) {
             LiteralExpression(Token.NULL)
         reader.test(TokenType.SEMICOLON)
         return VarStatement(name, value)
+    }
+
+    private fun mapperDeclaration(): Statement {
+        val name = reader.peekAndNext()
+        if (!reader.test(TokenType.LEFT_PAREN)) throw LurryParserException("Expect '(' after function name.", reader.peek().line, reader.peek().position)
+        val primaryKeys = ArrayList<Token>()
+        if (!reader.test(TokenType.RIGHT_PAREN)) {
+            do {
+                val identifier = reader.peekAndNext()
+                if (identifier.type != TokenType.IDENTIFIER) throw LurryParserException("Expect parameter name.", identifier.line, identifier.position)
+                primaryKeys += identifier
+            } while (reader.test(TokenType.COMMA))
+            if (!reader.test(TokenType.RIGHT_PAREN)) throw LurryParserException("Expect ')' after parameters.", reader.peek().line, reader.peek().position)
+        }
+        val body: List<Statement> = when (reader.peekAndNext().type) {
+            TokenType.EQUAL -> listOf(declaration())
+            TokenType.LEFT_BRACE -> block()
+            else -> throw LurryParserException("Expect '{' or '=' before function body.", reader.peek().line, reader.peek().position)
+        }
+        return MapperStatement(name, primaryKeys, body)
     }
 
     private fun statement(): Statement = when (reader.peek().type) {

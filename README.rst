@@ -29,8 +29,10 @@ DSL
     import package.Contact
     import package.ContactType
 
-    main(person_id): new Person(#person_id, #person_name, contacts, #income - #expense)
-    contacts(person_id, contact_id): new Contact(#contact_id, ContactType.of(#contact_type), #contact_value)
+    return(person_id) = new Person(#person_id, #person_name, contacts(), #income - #expense)
+    contacts(person_id, contact_id) {
+        new Contact(#contact_id, ContactType.of(#contact_type), #contact_value)
+    }
 
  
 License

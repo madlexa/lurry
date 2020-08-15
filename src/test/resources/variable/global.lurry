@@ -1,10 +1,12 @@
-var test
-var n1 = 1
-var n2 = 1 + 1
-println(n1)
-println(n2)
-println("result=" + (n1+n2))
-n1 = 3
-println(n1)
-var str = "string"
-println(str + "=" + n1)
+{
+    var test
+    var n1 = 1
+    var n2 = 1 + 1
+    println(n1)
+    println(n2)
+    println("result=" + (n1+n2))
+    n1 = 3
+    println(n1)
+    var str = "string"
+    println(str + "=" + n1)
+}

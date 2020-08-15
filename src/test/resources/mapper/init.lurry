@@ -1,0 +1,4 @@
+main(id) = println("main")
+second(id) {
+   println("second")
+}

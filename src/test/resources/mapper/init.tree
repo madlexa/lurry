@@ -1,0 +1,6 @@
+mapper main (id {
+[println (group main)]
+}
+mapper second (id {
+[println (group second)]
+}

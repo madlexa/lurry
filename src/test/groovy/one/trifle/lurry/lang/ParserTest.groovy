@@ -44,7 +44,7 @@ class ParserTest {
     @ValueSource(strings = ["literal/number", "literal/string",
             "operation/number", "operation/string",
             "operation/boolean", "variable/global",
-            "block/block", "if/if"
+            "block/block", "if/if", "mapper/init"
     ])
     void test(String name) {
         InputStream code = readResource("${name}.lurry")

@@ -17,6 +17,9 @@ package one.trifle.lurry.lang
 
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.sql.ResultSet
+import java.sql.ResultSetMetaData
+import java.sql.Types
 import kotlin.reflect.jvm.jvmName
 
 sealed class ExpressionVisitor<T> {
@@ -29,6 +32,10 @@ sealed class ExpressionVisitor<T> {
     abstract fun visitAssignExpression(expr: AssignExpression): T
     abstract fun visitLogicalExpression(expr: LogicalExpression): T
     abstract fun <R> visitBlock(block: () -> R): R
+    abstract fun <R> createMapper(call: () -> R): Mapper<R>
+    interface Mapper<R> {
+        fun call(arg: ResultSet): R
+    }
 }
 
 class ExpressionInterpreter : ExpressionVisitor<Any?>() {
@@ -132,7 +139,19 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         environment!!.define(name, value)
     }
 
-    private class Environment(private val enclosing: Environment? = null) {
+    override fun <R> visitBlock(block: () -> R): R {
+        val last = environment
+        try {
+            environment = Environment(last)
+            return block()
+        } finally {
+            environment = last
+        }
+    }
+
+    override fun <R> createMapper(call: () -> R) = LurryMapper<R>(environment, call)
+
+    class Environment(private val enclosing: Environment? = null) {
         private val variables: MutableMap<String, Any?> = HashMap()
         fun define(name: String, value: Any?) {
             variables[name] = value
@@ -161,6 +180,36 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 environment = environment.enclosing
             }
             throw LurryInterpretationException("Undefined variable '${name}'", expr.name.line, expr.name.position)
+        }
+    }
+
+    class LurryMapper<R>(private val environment: Environment?, private val call: () -> R) : Mapper<R> {
+        override fun call(arg: ResultSet): R {
+            val env = Environment(environment)
+            val metadata: ResultSetMetaData = arg.metaData
+            (1..metadata.columnCount).forEach { index ->
+                val name: String = metadata.getColumnName(index)
+                val value: Any? = when (metadata.getColumnType(index)) {
+                    Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR -> arg.getString(index)
+                    Types.NUMERIC, Types.DECIMAL -> arg.getBigDecimal(index)
+                    Types.BIT -> arg.getBoolean(index)
+                    Types.TINYINT -> arg.getByte(index)
+                    Types.SMALLINT -> arg.getShort(index)
+                    Types.BIGINT -> arg.getLong(index)
+                    Types.REAL, Types.FLOAT -> arg.getFloat(index)
+                    Types.DOUBLE -> arg.getDouble(index)
+                    Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> arg.getBytes(index)
+                    Types.DATE -> arg.getDate(index)
+                    Types.TIME -> arg.getTime(index)
+                    Types.TIMESTAMP -> arg.getTimestamp(index)
+                    Types.ARRAY -> arg.getArray(index)
+                    Types.BLOB -> arg.getBlob(index)
+                    Types.NULL -> null
+                    else -> arg.getString(index)
+                }
+                env.define("#${name}", value)
+            }
+            return call()
         }
     }
 
@@ -246,16 +295,6 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         override fun divide(left: Number, right: Number): BigDecimal = eval(left, right) { l, r -> l / r }
         override fun compareTo(left: Number, right: Number): Int = eval(left, right) { l, r -> l.compareTo(r) }
     }
-
-    override fun <R> visitBlock(block: () -> R): R {
-        val last = environment
-        try {
-            environment = Environment(last)
-            return block()
-        } finally {
-            environment = last
-        }
-    }
 }
 
 object ExpressionPrinter : ExpressionVisitor<String>() {
@@ -291,4 +330,8 @@ object ExpressionPrinter : ExpressionVisitor<String>() {
     }
 
     override fun <R> visitBlock(block: () -> R): R = block()
+    override fun <R> createMapper(call: () -> R): Mapper<R> = EmptyMapper(call)
+    class EmptyMapper<R>(private val call: () -> R) : Mapper<R> {
+        override fun call(arg: ResultSet): R = call()
+    }
 }

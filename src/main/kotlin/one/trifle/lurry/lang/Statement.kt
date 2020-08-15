@@ -38,3 +38,7 @@ class IfStatement(val condition: Expression, val than: Statement, val `else`: St
 class BlockStatement(val statements: List<Statement>) : Statement() {
     override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitBlockStatement(this)
 }
+
+class MapperStatement(val name: Token, val params: List<Token>, val body: List<Statement>) : Statement() {
+    override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitMapperStatement(this)
+}

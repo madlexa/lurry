@@ -32,6 +32,7 @@ class Lexer(source: InputStream) {
                 '+' -> Token(TokenType.PLUS, null, reader.line, reader.position)
                 '*' -> Token(TokenType.STAR, null, reader.line, reader.position)
                 ';' -> Token(TokenType.SEMICOLON, null, reader.line, reader.position)
+                ',' -> Token(TokenType.COMMA, null, reader.line, reader.position)
                 ' ', '\t', '\r', '\n' -> null
                 '=' -> Token(if (reader.testNext('=')) TokenType.EQUAL_EQUAL else TokenType.EQUAL, null, reader.line, reader.position)
                 '!' -> Token(if (reader.testNext('=')) TokenType.BANG_EQUAL else TokenType.BANG, null, reader.line, reader.position)
