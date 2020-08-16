@@ -31,10 +31,17 @@ sealed class ExpressionVisitor<T> {
     abstract fun define(name: String, value: T?)
     abstract fun visitAssignExpression(expr: AssignExpression): T
     abstract fun visitLogicalExpression(expr: LogicalExpression): T
-    abstract fun <R> visitBlock(block: () -> R): R
-    abstract fun <R> createMapper(call: () -> R): Mapper<R>
-    interface Mapper<R> {
+    abstract fun visitCallExpression(expr: CallExpression): T
+    abstract fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R
+    abstract fun <R> createMapper(call: (Map<String, Any?>) -> R): LurryMapper<R>
+    abstract fun <R> createFunction(params: List<Token>, call: (Map<String, Any?>) -> R): LurryFunction<R>
+
+    interface LurryMapper<R> {
         fun call(arg: ResultSet): R
+    }
+
+    interface LurryFunction<R> {
+        fun call(vararg args: Any?): R
     }
 }
 
@@ -139,17 +146,29 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         environment!!.define(name, value)
     }
 
-    override fun <R> visitBlock(block: () -> R): R {
+    override fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R {
         val last = environment
         try {
-            environment = Environment(last)
+            environment = Environment(last).apply {
+                env.forEach { (name, value) -> define(name, value) }
+            }
             return block()
         } finally {
             environment = last
         }
     }
 
-    override fun <R> createMapper(call: () -> R) = LurryMapper<R>(environment, call)
+    override fun visitCallExpression(expr: CallExpression): Any? {
+        val function = evaluate(expr.call)
+        if (function !is LurryFunction<*>) {
+            throw LurryInterpretationException("Can only call functions", expr.line, expr.position)
+        }
+        val arguments = expr.arguments.map { arg -> evaluate(arg) }
+        return function.call(*arguments.toTypedArray())
+    }
+
+    override fun <R> createMapper(call: (Map<String, Any?>) -> R) = InterpretationMapper(call)
+    override fun <R> createFunction(params: List<Token>, call: (Map<String, Any?>) -> R) = InterpretationFunction(params, call)
 
     class Environment(private val enclosing: Environment? = null) {
         private val variables: MutableMap<String, Any?> = HashMap()
@@ -183,9 +202,20 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         }
     }
 
-    class LurryMapper<R>(private val environment: Environment?, private val call: () -> R) : Mapper<R> {
+    class InterpretationFunction<R>(private val params: List<Token>, private val body: (Map<String, Any?>) -> R) : LurryFunction<R> {
+        override fun call(vararg args: Any?): R {
+            val vars = if (params.isEmpty()) {
+                mapOf()
+            } else {
+                (params.indices).map { i -> params[i].value.toString() to args[i] }.toMap()
+            }
+            return body(vars)
+        }
+    }
+
+    class InterpretationMapper<R>(private val body: (Map<String, Any?>) -> R) : LurryMapper<R> {
         override fun call(arg: ResultSet): R {
-            val env = Environment(environment)
+            val row: MutableMap<String, Any?> = HashMap()
             val metadata: ResultSetMetaData = arg.metaData
             (1..metadata.columnCount).forEach { index ->
                 val name: String = metadata.getColumnName(index)
@@ -207,9 +237,9 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                     Types.NULL -> null
                     else -> arg.getString(index)
                 }
-                env.define("#${name}", value)
+                row["#${name}"] = value
             }
-            return call()
+            return body(row)
         }
     }
 
@@ -329,9 +359,18 @@ object ExpressionPrinter : ExpressionVisitor<String>() {
         else -> value.toString()
     }
 
-    override fun <R> visitBlock(block: () -> R): R = block()
-    override fun <R> createMapper(call: () -> R): Mapper<R> = EmptyMapper(call)
-    class EmptyMapper<R>(private val call: () -> R) : Mapper<R> {
-        override fun call(arg: ResultSet): R = call()
+    override fun visitCallExpression(expr: CallExpression): String =
+            "call ${print(expr.call)} (${expr.arguments.joinToString(", ") { arg -> print(arg) }})"
+
+    override fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R = block()
+    override fun <R> createMapper(call: (Map<String, Any?>) -> R) = EmptyMapper(call)
+    override fun <R> createFunction(params: List<Token>, call: (Map<String, Any?>) -> R) = EmptyFunction(call)
+
+    class EmptyMapper<R>(private val body: (Map<String, Any?>) -> R) : LurryMapper<R> {
+        override fun call(arg: ResultSet): R = body(mapOf())
+    }
+
+    class EmptyFunction<R>(private val body: (Map<String, Any?>) -> R) : LurryFunction<R> {
+        override fun call(vararg args: Any?): R = body(mapOf())
     }
 }

@@ -1,0 +1,16 @@
+fun test1() {
+    println("test1()")
+}
+fun test2(arg) {
+    println("test2(" + arg + ")")
+    test1()
+}
+fun test3(arg1, arg2) {
+    println("test3(" + arg1 + ", " + arg2 + ")")
+    test2(arg1)
+}
+{
+   test1()
+   test2(40 + 1 + 1)
+   test3("var" + 1, "var" + 2)
+}

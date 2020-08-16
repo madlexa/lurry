@@ -1,6 +1,6 @@
-mapper main (id {
-[println (group main)]
+mapper main (id) {
+println (group main)
 }
-mapper second (id {
-[println (group second)]
+mapper second (id) {
+println (group second)
 }

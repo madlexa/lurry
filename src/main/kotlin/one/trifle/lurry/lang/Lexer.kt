@@ -33,6 +33,7 @@ class Lexer(source: InputStream) {
                 '*' -> Token(TokenType.STAR, null, reader.line, reader.position)
                 ';' -> Token(TokenType.SEMICOLON, null, reader.line, reader.position)
                 ',' -> Token(TokenType.COMMA, null, reader.line, reader.position)
+                '.' -> Token(TokenType.DOT, null, reader.line, reader.position)
                 ' ', '\t', '\r', '\n' -> null
                 '=' -> Token(if (reader.testNext('=')) TokenType.EQUAL_EQUAL else TokenType.EQUAL, null, reader.line, reader.position)
                 '!' -> Token(if (reader.testNext('=')) TokenType.BANG_EQUAL else TokenType.BANG, null, reader.line, reader.position)
@@ -145,6 +146,8 @@ class Lexer(source: InputStream) {
             "for" -> Token(TokenType.FOR, null, line, position)
             "return" -> Token(TokenType.RETURN, null, line, position)
             "while" -> Token(TokenType.WHILE, null, line, position)
+            "fun" -> Token(TokenType.FUN, null, line, position)
+            "import" -> Token(TokenType.IMPORT, null, line, position)
             else -> Token(TokenType.IDENTIFIER, identifier, line, position)
         }
     }

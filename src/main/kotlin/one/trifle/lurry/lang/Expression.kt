@@ -50,3 +50,7 @@ data class AssignExpression(override val name: Token, val value: Expression) : E
 data class LogicalExpression(val operation: Token, val left: Expression, val right: Expression) : Expression(operation.line, operation.position) {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitLogicalExpression(this)
 }
+
+data class CallExpression(val call: Expression, val arguments: List<Expression>) : Expression(call.line, call.position) {
+    override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitCallExpression(this)
+}

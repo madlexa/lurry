@@ -35,6 +35,7 @@ enum class TokenType {
     // Keywords.
     CLASS, ELSE, FALSE, FUN, FOR, IF, NULL,
     PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+    IMPORT,
 
     EOF;
 }

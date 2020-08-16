@@ -42,3 +42,7 @@ class BlockStatement(val statements: List<Statement>) : Statement() {
 class MapperStatement(val name: Token, val params: List<Token>, val body: List<Statement>) : Statement() {
     override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitMapperStatement(this)
 }
+
+class FunctionStatement(val name: Token, val params: List<Token>, val body: List<Statement>) : Statement() {
+    override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitFunctionStatement(this)
+}

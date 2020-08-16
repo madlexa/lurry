@@ -1,0 +1,6 @@
+test1()
+test2(42)
+test1()
+test3(var1, var2)
+test2(var1)
+test1()

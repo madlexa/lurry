@@ -1,0 +1,15 @@
+fun test1 () {
+println (group test1())
+}
+fun test2 (arg) {
+println (group (PLUS (PLUS test2( arg) )))
+call test1 ()
+}
+fun test3 (arg1, arg2) {
+println (group (PLUS (PLUS (PLUS (PLUS test3( arg1) , ) arg2) )))
+call test2 (arg1)
+}
+(block
+call test1 ()
+call test2 ((PLUS (PLUS 40 1) 1))
+call test3 ((PLUS var 1), (PLUS var 2)))

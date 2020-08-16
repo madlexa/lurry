@@ -22,6 +22,7 @@ sealed class StatementVisitor<T>(val visitor: ExpressionVisitor<T>) {
     abstract fun visitBlockStatement(stmt: BlockStatement): T
     abstract fun visitIfStatement(stmt: IfStatement): T
     abstract fun visitMapperStatement(stmt: MapperStatement): T
+    abstract fun visitFunctionStatement(stmt: FunctionStatement): T
 }
 
 class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<Any?>(visitor) {
@@ -43,7 +44,7 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
     }
 
     override fun visitBlockStatement(stmt: BlockStatement): Any? {
-        visitor.visitBlock {
+        visitor.visitBlock(mapOf()) {
             stmt.statements.forEach { statement ->
                 execute(statement)
             }
@@ -64,8 +65,18 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
     }
 
     override fun visitMapperStatement(stmt: MapperStatement) {
-        visitor.define(stmt.name.value.toString(), visitor.createMapper {
-            visitor.visitBlock {
+        visitor.define(stmt.name.value.toString(), visitor.createMapper { args ->
+            visitor.visitBlock(args) {
+                stmt.body.forEach { statement ->
+                    execute(statement)
+                }
+            }
+        })
+    }
+
+    override fun visitFunctionStatement(stmt: FunctionStatement) {
+        visitor.define(stmt.name.value.toString(), visitor.createFunction(stmt.params) { args ->
+            visitor.visitBlock(args) {
                 stmt.body.forEach { statement ->
                     execute(statement)
                 }
@@ -104,8 +115,13 @@ class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(vi
             "(block${stmt.statements.joinToString(separator = "") { statement -> "\n" + statement.accept(this) }})"
 
     override fun visitMapperStatement(stmt: MapperStatement) =
-            """mapper ${stmt.name.value} (${stmt.params.map { param -> param.value }.joinToString(", ")} {
-            |${stmt.body.map { statement -> statement.accept(this) }}
+            """mapper ${stmt.name.value} (${stmt.params.map { param -> param.value }.joinToString(", ")}) {
+            |${stmt.body.map { statement -> statement.accept(this) }.joinToString("\n")}
+            |}""".trimMargin()
+
+    override fun visitFunctionStatement(stmt: FunctionStatement) =
+            """fun ${stmt.name.value} (${stmt.params.map { param -> param.value }.joinToString(", ")}) {
+            |${stmt.body.map { statement -> statement.accept(this) }.joinToString("\n")}
             |}""".trimMargin()
 
     override fun visitIfStatement(stmt: IfStatement): String =
