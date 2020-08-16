@@ -1,6 +1,4 @@
-fun test1() {
-    println("test1()")
-}
+fun test1() = println("test1()")
 fun test2(arg) {
     println("test2(" + arg + ")")
     test1()
