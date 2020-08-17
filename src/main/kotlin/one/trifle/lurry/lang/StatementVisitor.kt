@@ -19,10 +19,11 @@ sealed class StatementVisitor<T>(val visitor: ExpressionVisitor<T>) {
     abstract fun visitExpressionStatement(stmt: ExpressionStatement): T
     abstract fun visitVarStatement(stmt: VarStatement): T
     abstract fun visitPrintStatement(stmt: PrintStatement): T
-    abstract fun visitBlockStatement(stmt: BlockStatement): T
+    abstract fun visitBlockStatement(stmt: BlockStatement, args: Map<String, Any?> = mapOf()): T
     abstract fun visitIfStatement(stmt: IfStatement): T
     abstract fun visitMapperStatement(stmt: MapperStatement): T
     abstract fun visitFunctionStatement(stmt: FunctionStatement): T
+    abstract fun visitReturnStatement(stmt: ReturnStatement): T
 }
 
 class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<Any?>(visitor) {
@@ -43,13 +44,11 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
         return null
     }
 
-    override fun visitBlockStatement(stmt: BlockStatement): Any? {
-        visitor.visitBlock(mapOf()) {
-            stmt.statements.forEach { statement ->
-                execute(statement)
-            }
-        }
-        return null
+    override fun visitBlockStatement(stmt: BlockStatement, args: Map<String, Any?>): Any? = visitor.visitBlock(args) {
+        stmt.statements.asSequence()
+                .map { statement -> execute(statement) }
+                .find { result -> result is ReturnValue }
+                ?: Unit
     }
 
     override fun visitIfStatement(stmt: IfStatement): Any? {
@@ -66,27 +65,31 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
 
     override fun visitMapperStatement(stmt: MapperStatement) {
         visitor.define(stmt.name.value.toString(), visitor.createMapper { args ->
-            visitor.visitBlock(args) {
-                stmt.body.forEach { statement ->
-                    execute(statement)
-                }
-            }
+            val result = visitBlockStatement(stmt.body, args)
+            if (result is ReturnValue) result.value
+            else result
         })
     }
 
     override fun visitFunctionStatement(stmt: FunctionStatement) {
         visitor.define(stmt.name.value.toString(), visitor.createFunction(stmt.params) { args ->
-            visitor.visitBlock(args) {
-                stmt.body.forEach { statement ->
-                    execute(statement)
-                }
-            }
+            val result = visitBlockStatement(stmt.body, args)
+            if (result is ReturnValue) result.value
+            else result
         })
+    }
+
+    override fun visitReturnStatement(stmt: ReturnStatement): Any? = if (stmt.value != null) {
+        ReturnValue(evaluate(stmt.value))
+    } else {
+        Unit
     }
 
     private fun execute(stmt: Statement): Any? = stmt.accept(this)
 
     private fun evaluate(expression: Expression): Any? = expression.accept(visitor)
+
+    data class ReturnValue(val value: Any?)
 }
 
 class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(visitor) {
@@ -111,17 +114,17 @@ class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(vi
 
     override fun visitPrintStatement(stmt: PrintStatement): String = parenthesize("println", stmt.expression)
 
-    override fun visitBlockStatement(stmt: BlockStatement): String =
+    override fun visitBlockStatement(stmt: BlockStatement, args: Map<String, Any?>): String =
             "(block${stmt.statements.joinToString(separator = "") { statement -> "\n" + statement.accept(this) }})"
 
     override fun visitMapperStatement(stmt: MapperStatement) =
             """mapper ${stmt.name.value} (${stmt.params.map { param -> param.value }.joinToString(", ")}) {
-            |${stmt.body.map { statement -> statement.accept(this) }.joinToString("\n")}
+            |${visitBlockStatement(stmt.body)}
             |}""".trimMargin()
 
     override fun visitFunctionStatement(stmt: FunctionStatement) =
             """fun ${stmt.name.value} (${stmt.params.map { param -> param.value }.joinToString(", ")}) {
-            |${stmt.body.map { statement -> statement.accept(this) }.joinToString("\n")}
+            |${visitBlockStatement(stmt.body)}
             |}""".trimMargin()
 
     override fun visitIfStatement(stmt: IfStatement): String =
@@ -129,4 +132,10 @@ class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(vi
                 |than: ${stmt.than.accept(this)}
                 |else: ${stmt.`else`?.accept(this)}
                 |)""".trimMargin()
+
+    override fun visitReturnStatement(stmt: ReturnStatement): String = if (stmt.value == null) {
+        "(return)"
+    } else {
+        parenthesize("return", stmt.value)
+    }
 }

@@ -64,11 +64,11 @@ class Parser(tokens: List<Token>) {
             if (!reader.test(TokenType.RIGHT_PAREN)) throw LurryParserException("Expect ')' after parameters.", reader.peek().line, reader.peek().position)
         }
         val body: List<Statement> = when (reader.peekAndNext().type) {
-            TokenType.EQUAL -> listOf(declaration())
+            TokenType.EQUAL -> listOf(declaration()) // TODO add return statement
             TokenType.LEFT_BRACE -> block()
             else -> throw LurryParserException("Expect '{' or '=' before function body.", reader.peek().line, reader.peek().position)
         }
-        return FunctionStatement(name, params, body)
+        return FunctionStatement(name, params, BlockStatement(body))
     }
 
     private fun mapperDeclaration(): Statement {
@@ -84,11 +84,11 @@ class Parser(tokens: List<Token>) {
             if (!reader.test(TokenType.RIGHT_PAREN)) throw LurryParserException("Expect ')' after identifiers.", reader.peek().line, reader.peek().position)
         }
         val body: List<Statement> = when (reader.peekAndNext().type) {
-            TokenType.EQUAL -> listOf(declaration())
+            TokenType.EQUAL -> listOf(declaration()) // TODO add return statement
             TokenType.LEFT_BRACE -> block()
             else -> throw LurryParserException("Expect '{' or '=' before mapper body.", reader.peek().line, reader.peek().position)
         }
-        return MapperStatement(name, primaryKeys, body)
+        return MapperStatement(name, primaryKeys, BlockStatement(body))
     }
 
     private fun statement(): Statement = when (reader.peek().type) {
@@ -119,7 +119,14 @@ class Parser(tokens: List<Token>) {
 
     private fun forStatement(): Statement = TODO()
 
-    private fun returnStatement(): Statement = TODO()
+    private fun returnStatement(): Statement {
+        reader.next()
+        return if (reader.peek().type == TokenType.RIGHT_BRACE) {
+            ReturnStatement(null)
+        } else {
+            ReturnStatement(expression())
+        }
+    }
 
     private fun whileStatement(): Statement = TODO()
 

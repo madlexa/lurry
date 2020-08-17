@@ -1,13 +1,16 @@
 fun test1 () {
-println (group test1())
+(block
+println (group test1()))
 }
 fun test2 (arg) {
+(block
 println (group (PLUS (PLUS test2( arg) )))
-call test1 ()
+call test1 ())
 }
 fun test3 (arg1, arg2) {
+(block
 println (group (PLUS (PLUS (PLUS (PLUS test3( arg1) , ) arg2) )))
-call test2 (arg1)
+call test2 (arg1))
 }
 (block
 call test1 ()

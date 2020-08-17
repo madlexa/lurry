@@ -1,0 +1,22 @@
+fun test (bool) {
+(block
+(if (group bool)
+than: (block
+return 1)
+else: null
+)
+return 0)
+}
+(block
+println (group call test (TRUE))
+println (group call test (FALSE)))
+fun fib (num) {
+(block
+(if (group (LESS num 2))
+than: return 1
+else: null
+)
+return (PLUS call fib ((MINUS num 1)) call fib ((MINUS num 2))))
+}
+(block
+println (group call fib (7)))
