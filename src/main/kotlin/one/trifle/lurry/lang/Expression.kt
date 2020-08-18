@@ -54,3 +54,7 @@ data class LogicalExpression(val operation: Token, val left: Expression, val rig
 data class CallExpression(val call: Expression, val arguments: List<Expression>) : Expression(call.line, call.position) {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitCallExpression(this)
 }
+
+data class MethodCallExpression(val obj: Expression, val method: Token, val arguments: List<Expression>) : Expression(method.line, method.position) {
+    override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitMethodCallExpression(this)
+}

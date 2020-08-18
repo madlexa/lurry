@@ -1,0 +1,3 @@
+(block
+println (group (PLUS (PLUS '  test .trim()) '))
+println (group mytest.substring(1).substring(1)))

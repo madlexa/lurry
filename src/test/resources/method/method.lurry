@@ -1,0 +1,4 @@
+{
+    println("'" + " test ".trim() + "'")
+    println("mytest".substring(1).substring(1))
+}

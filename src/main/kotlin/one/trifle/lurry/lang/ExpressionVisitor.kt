@@ -15,6 +15,7 @@
  */
 package one.trifle.lurry.lang
 
+import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.sql.ResultSet
@@ -32,6 +33,7 @@ sealed class ExpressionVisitor<T> {
     abstract fun visitAssignExpression(expr: AssignExpression): T
     abstract fun visitLogicalExpression(expr: LogicalExpression): T
     abstract fun visitCallExpression(expr: CallExpression): T
+    abstract fun visitMethodCallExpression(expr: MethodCallExpression): T
     abstract fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R
     abstract fun <R> createMapper(call: (Map<String, Any?>) -> R): LurryMapper<R>
     abstract fun <R> createFunction(params: List<Token>, call: (Map<String, Any?>) -> R): LurryFunction<R>
@@ -165,6 +167,56 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         }
         val arguments = expr.arguments.map { arg -> evaluate(arg) }
         return function.call(*arguments.toTypedArray())
+    }
+
+    override fun visitMethodCallExpression(expr: MethodCallExpression): Any? {
+        // todo cache
+        val args = expr.arguments.map { arg -> evaluate(arg) }
+        val obj = evaluate(expr.obj)
+                ?: throw LurryInterpretationException("Null pointer exception", expr.line, expr.position)
+
+        val getPrimitive: (Class<*>) -> Class<*> = { clazz: Class<*> ->
+            if (clazz.isPrimitive) {
+                clazz
+            } else {
+                val field = clazz.declaredFields.find { field -> field.name == "TYPE" }
+                if (field == null || !Modifier.isPublic(field.modifiers) || !Modifier.isStatic(field.modifiers)) {
+                    clazz
+                } else {
+                    field.get(null).let { c ->
+                        if (c is Class<*>) {
+                            c
+                        } else {
+                            clazz
+                        }
+                    }
+
+                }
+            }
+        }
+        val isAssignableFrom: (Class<*>, Class<*>) -> Boolean = { c1: Class<*>, c2: Class<*> ->
+            var class1 = c1
+            var class2 = c2
+            if (class1.isPrimitive || class2.isPrimitive) {
+                class1 = getPrimitive(c1)
+                class2 = getPrimitive(c2)
+            }
+            class1 == class2 || class1.isAssignableFrom(class2)
+        }
+
+        val method = obj.javaClass.declaredMethods
+                .filter { method -> method.name == expr.method.value }
+                .find { method ->
+                    if (method.parameters.size != args.size) return@find false
+                    args.asSequence().map { arg -> arg?.javaClass }
+                            .forEachIndexed { index, arg ->
+                                if (arg != null && !isAssignableFrom(method.parameters[index].type, arg)) {
+                                    return@find false
+                                }
+                            }
+                    return@find true
+                } ?: throw LurryInterpretationException("Method not found exception", expr.line, expr.position)
+        return method.invoke(obj, *args.toTypedArray())
     }
 
     override fun <R> createMapper(call: (Map<String, Any?>) -> R) = InterpretationMapper(call)
@@ -361,6 +413,9 @@ object ExpressionPrinter : ExpressionVisitor<String>() {
 
     override fun visitCallExpression(expr: CallExpression): String =
             "call ${print(expr.call)} (${expr.arguments.joinToString(", ") { arg -> print(arg) }})"
+
+    override fun visitMethodCallExpression(expr: MethodCallExpression): String =
+            "${print(expr.obj)}.${expr.method.value}(${expr.arguments.joinToString(", ") { arg -> print(arg) }})"
 
     override fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R = block()
     override fun <R> createMapper(call: (Map<String, Any?>) -> R) = EmptyMapper(call)

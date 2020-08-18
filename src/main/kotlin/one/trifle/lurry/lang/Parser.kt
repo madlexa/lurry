@@ -54,15 +54,7 @@ class Parser(tokens: List<Token>) {
         val name = reader.next()
         reader.next()
         if (!reader.test(TokenType.LEFT_PAREN)) throw LurryParserException("Expect '(' after function name.", reader.peek().line, reader.peek().position)
-        val params = ArrayList<Token>()
-        if (!reader.test(TokenType.RIGHT_PAREN)) {
-            do {
-                val param = reader.peekAndNext()
-                if (param.type != TokenType.IDENTIFIER) throw LurryParserException("Expect parameter name.", param.line, param.position)
-                params += param
-            } while (reader.test(TokenType.COMMA))
-            if (!reader.test(TokenType.RIGHT_PAREN)) throw LurryParserException("Expect ')' after parameters.", reader.peek().line, reader.peek().position)
-        }
+        val params = getParameters()
         val body: List<Statement> = when (reader.peekAndNext().type) {
             TokenType.EQUAL -> listOf(declaration()) // TODO add return statement
             TokenType.LEFT_BRACE -> block()
@@ -74,15 +66,7 @@ class Parser(tokens: List<Token>) {
     private fun mapperDeclaration(): Statement {
         val name = reader.peekAndNext()
         if (!reader.test(TokenType.LEFT_PAREN)) throw LurryParserException("Expect '(' after mapper name.", reader.peek().line, reader.peek().position)
-        val primaryKeys = ArrayList<Token>()
-        if (!reader.test(TokenType.RIGHT_PAREN)) {
-            do {
-                val identifier = reader.peekAndNext()
-                if (identifier.type != TokenType.IDENTIFIER) throw LurryParserException("Expect identifier name.", identifier.line, identifier.position)
-                primaryKeys += identifier
-            } while (reader.test(TokenType.COMMA))
-            if (!reader.test(TokenType.RIGHT_PAREN)) throw LurryParserException("Expect ')' after identifiers.", reader.peek().line, reader.peek().position)
-        }
+        val primaryKeys = getParameters()
         val body: List<Statement> = when (reader.peekAndNext().type) {
             TokenType.EQUAL -> listOf(declaration()) // TODO add return statement
             TokenType.LEFT_BRACE -> block()
@@ -247,24 +231,45 @@ class Parser(tokens: List<Token>) {
         while (true) {
             expr = when (reader.peek().type) {
                 TokenType.LEFT_PAREN -> {
-                    val args = ArrayList<Expression>()
-                    reader.next()
-                    if (!reader.test(TokenType.RIGHT_PAREN)) {
-                        do {
-                            args += expression()
-                        } while (reader.test(TokenType.COMMA))
-                        if (!reader.test(TokenType.RIGHT_PAREN)) throw LurryParserException("Expect ')' after arguments.", reader.peek().line, reader.peek().position)
-                    }
-                    CallExpression(expr, args)
+                    CallExpression(expr, getArguments())
                 }
                 TokenType.DOT -> {
                     val name: Token = reader.next()
                     if (name.type != TokenType.IDENTIFIER) throw LurryParserException("Expect property name after '.'.", name.line, name.position)
-                    TODO()
+                    if (reader.testNext(TokenType.LEFT_PAREN)) {
+                        MethodCallExpression(expr, name, getArguments())
+                    } else {
+                        expr // TODO call field
+                    }
                 }
                 else -> return expr
             }
         }
+    }
+
+    private fun getArguments(): List<Expression> {
+        val args = ArrayList<Expression>()
+        reader.next()
+        if (!reader.test(TokenType.RIGHT_PAREN)) {
+            do {
+                args += expression()
+            } while (reader.test(TokenType.COMMA))
+            if (!reader.test(TokenType.RIGHT_PAREN)) throw LurryParserException("Expect ')' after arguments.", reader.peek().line, reader.peek().position)
+        }
+        return args
+    }
+
+    private fun getParameters(): List<Token> {
+        val params = ArrayList<Token>()
+        if (!reader.test(TokenType.RIGHT_PAREN)) {
+            do {
+                val identifier = reader.peekAndNext()
+                if (identifier.type != TokenType.IDENTIFIER) throw LurryParserException("Expect identifier name.", identifier.line, identifier.position)
+                params += identifier
+            } while (reader.test(TokenType.COMMA))
+            if (!reader.test(TokenType.RIGHT_PAREN)) throw LurryParserException("Expect ')' after identifiers.", reader.peek().line, reader.peek().position)
+        }
+        return params
     }
 
     private fun primary(): Expression {
