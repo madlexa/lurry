@@ -50,3 +50,7 @@ class FunctionStatement(val name: Token, val params: List<Token>, val body: Bloc
 class ReturnStatement(val value: Expression?) : Statement() {
     override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitReturnStatement(this)
 }
+
+class ImportStatement(val name: String, val path: String) : Statement() {
+    override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitImportStatement(this)
+}

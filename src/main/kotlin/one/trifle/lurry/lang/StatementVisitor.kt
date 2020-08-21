@@ -24,6 +24,7 @@ sealed class StatementVisitor<T>(val visitor: ExpressionVisitor<T>) {
     abstract fun visitMapperStatement(stmt: MapperStatement): T
     abstract fun visitFunctionStatement(stmt: FunctionStatement): T
     abstract fun visitReturnStatement(stmt: ReturnStatement): T
+    abstract fun visitImportStatement(stmt: ImportStatement): T
 }
 
 class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<Any?>(visitor) {
@@ -85,6 +86,10 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
         Unit
     }
 
+    override fun visitImportStatement(stmt: ImportStatement) {
+        visitor.define(stmt.name, stmt.path)
+    }
+
     private fun execute(stmt: Statement): Any? = stmt.accept(this)
 
     private fun evaluate(expression: Expression): Any? = expression.accept(visitor)
@@ -138,4 +143,7 @@ class StatementPrinter(visitor: ExpressionPrinter) : StatementVisitor<String>(vi
     } else {
         parenthesize("return", stmt.value)
     }
+
+    override fun visitImportStatement(stmt: ImportStatement): String =
+            "import ${stmt.path} as ${stmt.name}"
 }

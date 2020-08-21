@@ -29,7 +29,7 @@ class Parser(tokens: List<Token>) {
 
     private fun main(): Statement = when (reader.peek().type) {
         TokenType.IDENTIFIER -> mapperDeclaration()
-        TokenType.IMPORT -> TODO() // importDeclaration()
+        TokenType.IMPORT -> importDeclaration()
         else -> declaration()
     }
 
@@ -73,6 +73,28 @@ class Parser(tokens: List<Token>) {
             else -> throw LurryParserException("Expect '{' or '=' before mapper body.", reader.peek().line, reader.peek().position)
         }
         return MapperStatement(name, primaryKeys, BlockStatement(body))
+    }
+
+    private fun importDeclaration(): Statement {
+        reader.next()
+        val path = StringBuilder()
+        do {
+            val dir = reader.peek()
+            if (dir.type != TokenType.IDENTIFIER) throw LurryParserException("Expect class path after import declaration", dir.line, dir.position)
+            path.append(dir.value).append(".")
+            reader.next()
+        } while (reader.test(TokenType.DOT))
+        path.setLength(path.length - 1)
+        val alias = reader.peek()
+        val name: String = if (alias.type == TokenType.IDENTIFIER && alias.value == "as") {
+            if (!reader.testNext(TokenType.IDENTIFIER)) throw LurryParserException("Expect class alias after import declaration", reader.peek().line, reader.peek().position)
+            reader.peekAndNext().value.toString()
+        } else {
+            path.toString().let { str ->
+                str.substring(str.lastIndexOf('.') + 1)
+            }
+        }
+        return ImportStatement(name, path.toString())
     }
 
     private fun statement(): Statement = when (reader.peek().type) {
@@ -239,7 +261,7 @@ class Parser(tokens: List<Token>) {
                     if (reader.testNext(TokenType.LEFT_PAREN)) {
                         MethodCallExpression(expr, name, getArguments())
                     } else {
-                        expr // TODO call field
+                        expr //FieldCallExpression(expr, name)
                     }
                 }
                 else -> return expr
