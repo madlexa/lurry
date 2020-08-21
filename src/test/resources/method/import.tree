@@ -1,2 +1,7 @@
-import java.lang.Map as Map
-import java.lang.HashMap as hash
+import java.util.Map as Map
+import java.util.HashMap as hash
+(block
+var map = call hash ()
+map.put(test, value)
+println (group map.get(test))
+println (group map.get(NaN)))

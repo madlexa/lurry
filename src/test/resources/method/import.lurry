@@ -1,2 +1,9 @@
-import java.lang.Map
-import java.lang.HashMap as hash
+import java.util.Map
+import java.util.HashMap as hash
+
+{
+    var map = hash()
+    map.put("test", "value")
+    println(map.get("test"))
+    println(map.get("NaN"))
+}

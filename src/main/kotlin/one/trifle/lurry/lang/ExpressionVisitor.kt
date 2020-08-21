@@ -15,6 +15,7 @@
  */
 package one.trifle.lurry.lang
 
+import java.lang.reflect.Executable
 import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -162,11 +163,13 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
 
     override fun visitCallExpression(expr: CallExpression): Any? {
         val function = evaluate(expr.call)
-        if (function !is LurryFunction<*>) {
-            throw LurryInterpretationException("Can only call functions", expr.line, expr.position)
-        }
         val arguments = expr.arguments.map { arg -> evaluate(arg) }
-        return function.call(*arguments.toTypedArray())
+        return when (function) {
+            is LurryFunction<*> -> function.call(*arguments.toTypedArray())
+            is Class<*> -> findExecutable(function.constructors, arguments)?.newInstance(*arguments.toTypedArray())
+                    ?: throw LurryInterpretationException("Constructor not found exception", expr.line, expr.position)
+            else -> throw LurryInterpretationException("Can only call functions or constructors", expr.line, expr.position)
+        }
     }
 
     override fun visitMethodCallExpression(expr: MethodCallExpression): Any? {
@@ -174,48 +177,10 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         val args = expr.arguments.map { arg -> evaluate(arg) }
         val obj = evaluate(expr.obj)
                 ?: throw LurryInterpretationException("Null pointer exception", expr.line, expr.position)
+        val method = findExecutable(obj.javaClass.declaredMethods, args) { method ->
+            method.name == expr.method.value
+        } ?: throw LurryInterpretationException("Method not found exception", expr.line, expr.position)
 
-        val getPrimitive: (Class<*>) -> Class<*> = { clazz: Class<*> ->
-            if (clazz.isPrimitive) {
-                clazz
-            } else {
-                val field = clazz.declaredFields.find { field -> field.name == "TYPE" }
-                if (field == null || !Modifier.isPublic(field.modifiers) || !Modifier.isStatic(field.modifiers)) {
-                    clazz
-                } else {
-                    field.get(null).let { c ->
-                        if (c is Class<*>) {
-                            c
-                        } else {
-                            clazz
-                        }
-                    }
-
-                }
-            }
-        }
-        val isAssignableFrom: (Class<*>, Class<*>) -> Boolean = { c1: Class<*>, c2: Class<*> ->
-            var class1 = c1
-            var class2 = c2
-            if (class1.isPrimitive || class2.isPrimitive) {
-                class1 = getPrimitive(c1)
-                class2 = getPrimitive(c2)
-            }
-            class1 == class2 || class1.isAssignableFrom(class2)
-        }
-
-        val method = obj.javaClass.declaredMethods
-                .filter { method -> method.name == expr.method.value }
-                .find { method ->
-                    if (method.parameters.size != args.size) return@find false
-                    args.asSequence().map { arg -> arg?.javaClass }
-                            .forEachIndexed { index, arg ->
-                                if (arg != null && !isAssignableFrom(method.parameters[index].type, arg)) {
-                                    return@find false
-                                }
-                            }
-                    return@find true
-                } ?: throw LurryInterpretationException("Method not found exception", expr.line, expr.position)
         return method.invoke(obj, *args.toTypedArray())
     }
 
@@ -292,6 +257,47 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 row["#${name}"] = value
             }
             return body(row)
+        }
+    }
+
+    private fun <T : Executable> findExecutable(executables: Array<T>, arguments: List<Any?>, condition: (T) -> Boolean = { true }): T? {
+        val getPrimitive: (Class<*>) -> Class<*> = { clazz: Class<*> ->
+            if (clazz.isPrimitive) {
+                clazz
+            } else {
+                val field = clazz.declaredFields.find { field -> field.name == "TYPE" }
+                if (field == null || !Modifier.isPublic(field.modifiers) || !Modifier.isStatic(field.modifiers)) {
+                    clazz
+                } else {
+                    field.get(null).let { c ->
+                        if (c is Class<*>) {
+                            c
+                        } else {
+                            clazz
+                        }
+                    }
+                }
+            }
+        }
+        val isAssignableFrom: (Class<*>, Class<*>) -> Boolean = { c1: Class<*>, c2: Class<*> ->
+            var class1 = c1
+            var class2 = c2
+            if (class1.isPrimitive || class2.isPrimitive) {
+                class1 = getPrimitive(c1)
+                class2 = getPrimitive(c2)
+            }
+            class1 == class2 || class1.isAssignableFrom(class2)
+        }
+
+        return executables.filter(condition).find { exec ->
+            if (exec.parameters.size != arguments.size) return@find false
+            arguments.asSequence().map { arg -> arg?.javaClass }
+                    .forEachIndexed { index, arg ->
+                        if (arg != null && !isAssignableFrom(exec.parameters[index].type, arg)) {
+                            return@find false
+                        }
+                    }
+            return@find true
         }
     }
 

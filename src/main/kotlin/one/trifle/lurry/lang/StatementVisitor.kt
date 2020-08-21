@@ -87,7 +87,7 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
     }
 
     override fun visitImportStatement(stmt: ImportStatement) {
-        visitor.define(stmt.name, stmt.path)
+        visitor.define(stmt.name, Class.forName(stmt.path))
     }
 
     private fun execute(stmt: Statement): Any? = stmt.accept(this)
