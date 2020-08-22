@@ -154,21 +154,13 @@ class Parser(tokens: List<Token>) {
         return IfStatement(condition, then, `else`)
     }
 
-    private fun expressionStatement(): Statement {
-        val expr: Expression = expression()
-        // TODO SEMICOLON
-        return ExpressionStatement(expr)
-    }
+    private fun expressionStatement(): Statement = ExpressionStatement(expression())
 
     private fun expression(): Expression {
-        return assignment()
-    }
-
-    private fun assignment(): Expression {
         var expr: Expression = or()
         if (reader.peek().type == TokenType.EQUAL) {
             val equals: Token = reader.peekAndNext()
-            val value: Expression = assignment()
+            val value: Expression = expression()
             expr = when (expr) {
                 is VariableExpression -> AssignExpression(expr.name, value)
                 // todo GetExpression
@@ -261,7 +253,7 @@ class Parser(tokens: List<Token>) {
                     if (reader.testNext(TokenType.LEFT_PAREN)) {
                         MethodCallExpression(expr, name, getArguments())
                     } else {
-                        expr //FieldCallExpression(expr, name)
+                        expr //TODO FieldCallExpression(expr, name)
                     }
                 }
                 else -> return expr
