@@ -172,7 +172,6 @@
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
-        <testSourceDirectory>src/test/groovy</testSourceDirectory>
 
         <plugins>
             <plugin>
