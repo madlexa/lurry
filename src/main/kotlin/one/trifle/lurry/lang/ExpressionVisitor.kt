@@ -176,14 +176,13 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
     override fun visitMethodCallExpression(expr: MethodCallExpression): Any? {
         // todo cache
         val args = expr.arguments.map { arg -> evaluate(arg) }
-        val obj = evaluate(expr.obj)
+        var obj = evaluate(expr.obj)
                 ?: throw LurryInterpretationException("Null pointer exception", expr.line, expr.position)
-        val method = findExecutable(obj.javaClass.declaredMethods, args) { method ->
-            method.name == expr.method.value
-        }
+        val clazz = if (obj is Class<*>) obj else obj.javaClass
+        val method = findExecutable(clazz.declaredMethods, args) { method -> method.name == expr.method.value }
                 ?: throw LurryInterpretationException("Method ${expr.method.value} not found exception", expr.line, expr.position)
-
-        return method.invoke(obj, *args.toTypedArray())
+        if (!method.isAccessible && Modifier.isPublic(method.modifiers)) method.isAccessible = true
+        return method.invoke(if (obj is Class<*>) null else obj, *args.toTypedArray())
     }
 
     override fun visitFieldCallExpression(expr: FieldCallExpression): Any? {

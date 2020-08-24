@@ -1,0 +1,6 @@
+import java.util.Collections
+
+{
+    var list = Collections.singletonList("element")
+    println(list.get(0))
+}

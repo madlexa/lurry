@@ -1,0 +1,4 @@
+import java.util.Collections as Collections
+(block
+var list = Collections.singletonList(element)
+println (group list.get(0)))
