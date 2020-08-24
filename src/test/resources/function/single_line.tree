@@ -1,0 +1,8 @@
+fun sum (a, b) {
+(block
+return (PLUS a b))
+}
+(block
+var a = call sum (1, 2)
+var b = call sum (a, a)
+println (group call sum (a, b)))

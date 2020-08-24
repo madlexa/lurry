@@ -1,6 +1,6 @@
 mapper main (id) {
 (block
-println (group main))
+return println (group main))
 }
 mapper second (id) {
 (block

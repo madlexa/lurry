@@ -1,6 +1,6 @@
 fun test1 () {
 (block
-println (group test1()))
+return println (group test1()))
 }
 fun test2 (arg) {
 (block

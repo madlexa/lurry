@@ -47,7 +47,7 @@ class FunctionStatement(val name: Token, val params: List<Token>, val body: Bloc
     override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitFunctionStatement(this)
 }
 
-class ReturnStatement(val value: Expression?) : Statement() {
+class ReturnStatement(val value: Statement?) : Statement() {
     override fun <T> accept(visitor: StatementVisitor<T>): T = visitor.visitReturnStatement(this)
 }
 

@@ -81,7 +81,7 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
     }
 
     override fun visitReturnStatement(stmt: ReturnStatement): Any? = if (stmt.value != null) {
-        ReturnValue(evaluate(stmt.value))
+        ReturnValue(stmt.value.accept(this))
     } else {
         Unit
     }

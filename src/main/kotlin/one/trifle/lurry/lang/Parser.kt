@@ -56,7 +56,7 @@ class Parser(tokens: List<Token>) {
         if (!reader.test(TokenType.LEFT_PAREN)) throw LurryParserException("Expect '(' after function name.", reader.peek().line, reader.peek().position)
         val params = getParameters()
         val body: List<Statement> = when (reader.peekAndNext().type) {
-            TokenType.EQUAL -> listOf(declaration()) // TODO add return statement
+            TokenType.EQUAL -> listOf(ReturnStatement(declaration()))
             TokenType.LEFT_BRACE -> block()
             else -> throw LurryParserException("Expect '{' or '=' before function body.", reader.peek().line, reader.peek().position)
         }
@@ -68,7 +68,7 @@ class Parser(tokens: List<Token>) {
         if (!reader.test(TokenType.LEFT_PAREN)) throw LurryParserException("Expect '(' after mapper name.", reader.peek().line, reader.peek().position)
         val primaryKeys = getParameters()
         val body: List<Statement> = when (reader.peekAndNext().type) {
-            TokenType.EQUAL -> listOf(declaration()) // TODO add return statement
+            TokenType.EQUAL -> listOf(ReturnStatement(declaration()))
             TokenType.LEFT_BRACE -> block()
             else -> throw LurryParserException("Expect '{' or '=' before mapper body.", reader.peek().line, reader.peek().position)
         }
@@ -130,7 +130,7 @@ class Parser(tokens: List<Token>) {
         return if (reader.peek().type == TokenType.RIGHT_BRACE) {
             ReturnStatement(null)
         } else {
-            ReturnStatement(expression())
+            ReturnStatement(ExpressionStatement(expression()))
         }
     }
 
@@ -163,7 +163,6 @@ class Parser(tokens: List<Token>) {
             val value: Expression = expression()
             expr = when (expr) {
                 is VariableExpression -> AssignExpression(expr.name, value)
-                // todo GetExpression
                 else -> throw LurryParserException("Invalid assignment target.", equals.line, equals.position)
             }
         }

@@ -1,0 +1,6 @@
+fun sum(a,b) = a + b
+{
+    var a = sum(1,2)
+    var b = sum(a,a)
+    println(sum(a,b))
+}

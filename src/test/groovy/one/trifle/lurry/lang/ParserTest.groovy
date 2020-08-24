@@ -46,7 +46,8 @@ class ParserTest {
             "operation/boolean", "variable/global",
             "block/block", "if/if", "mapper/init",
             "function/function", "function/return",
-            "method/method", "method/import"
+            "method/method", "method/import",
+            "function/single_line"
     ])
     void test(String name) {
         InputStream code = readResource("${name}.lurry")
