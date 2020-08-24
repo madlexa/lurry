@@ -1,0 +1,10 @@
+import one.trifle.lurry.testModel.Person
+
+{
+    var billy = Person()
+    billy.name = "Billy"
+    billy.age = 37
+    println(billy.name)
+    println(billy.age)
+    println(billy.toString())
+}

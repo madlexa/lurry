@@ -2,7 +2,18 @@ fun sum (a, b) {
 (block
 return (PLUS a b))
 }
+fun test (a) {
+(block
+return (if (group (GREATER a 5))
+than: (block
+return 1)
+else: (block
+return (MINUS 1))
+))
+}
 (block
 var a = call sum (1, 2)
 var b = call sum (a, a)
-println (group call sum (a, b)))
+println (group call sum (a, b))
+println (group call test (6))
+println (group call test (1)))

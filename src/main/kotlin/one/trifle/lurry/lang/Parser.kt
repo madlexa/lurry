@@ -252,7 +252,13 @@ class Parser(tokens: List<Token>) {
                     if (reader.testNext(TokenType.LEFT_PAREN)) {
                         MethodCallExpression(expr, name, getArguments())
                     } else {
-                        expr //TODO FieldCallExpression(expr, name)
+                        if (reader.testNext(TokenType.EQUAL)) {
+                            reader.next()
+                            FieldCallExpression(expr, name, expression())
+                        } else {
+                            reader.next()
+                            FieldCallExpression(expr, name)
+                        }
                     }
                 }
                 else -> return expr

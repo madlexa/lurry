@@ -1,0 +1,8 @@
+import one.trifle.lurry.testModel.Person as Person
+(block
+var billy = call Person ()
+(set billy name Billy)
+(set billy age 37)
+println (group (get billy name))
+println (group (get billy age))
+println (group billy.toString()))

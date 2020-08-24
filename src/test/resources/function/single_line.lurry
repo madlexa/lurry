@@ -1,6 +1,14 @@
 fun sum(a,b) = a + b
+fun test(a) = if(a > 5) {
+    return 1
+} else {
+    return -1
+}
 {
     var a = sum(1,2)
     var b = sum(a,a)
     println(sum(a,b))
+
+    println(test(6))
+    println(test(1))
 }

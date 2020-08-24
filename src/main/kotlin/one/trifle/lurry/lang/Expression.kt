@@ -58,3 +58,7 @@ data class CallExpression(val call: Expression, val arguments: List<Expression>)
 data class MethodCallExpression(val obj: Expression, val method: Token, val arguments: List<Expression>) : Expression(method.line, method.position) {
     override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitMethodCallExpression(this)
 }
+
+data class FieldCallExpression(val obj: Expression, val field: Token, val value: Expression? = null) : Expression(field.line, field.position) {
+    override fun <T> accept(visitor: ExpressionVisitor<T>): T = visitor.visitFieldCallExpression(this)
+}

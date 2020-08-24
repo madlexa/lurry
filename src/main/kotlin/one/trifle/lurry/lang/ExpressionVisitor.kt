@@ -35,6 +35,7 @@ sealed class ExpressionVisitor<T> {
     abstract fun visitLogicalExpression(expr: LogicalExpression): T
     abstract fun visitCallExpression(expr: CallExpression): T
     abstract fun visitMethodCallExpression(expr: MethodCallExpression): T
+    abstract fun visitFieldCallExpression(expr: FieldCallExpression): T
     abstract fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R
     abstract fun <R> createMapper(call: (Map<String, Any?>) -> R): LurryMapper<R>
     abstract fun <R> createFunction(params: List<Token>, call: (Map<String, Any?>) -> R): LurryFunction<R>
@@ -179,9 +180,41 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 ?: throw LurryInterpretationException("Null pointer exception", expr.line, expr.position)
         val method = findExecutable(obj.javaClass.declaredMethods, args) { method ->
             method.name == expr.method.value
-        } ?: throw LurryInterpretationException("Method not found exception", expr.line, expr.position)
+        }
+                ?: throw LurryInterpretationException("Method ${expr.method.value} not found exception", expr.line, expr.position)
 
         return method.invoke(obj, *args.toTypedArray())
+    }
+
+    override fun visitFieldCallExpression(expr: FieldCallExpression): Any? {
+        val obj = evaluate(expr.obj)
+                ?: throw LurryInterpretationException("Null pointer exception", expr.line, expr.position)
+        val field = obj.javaClass.fields.find { f -> f.name == expr.field.value }
+        return if (field != null) {
+            if (expr.value != null) {
+                evaluate(expr.value).run {
+                    field.set(obj, this)
+                }
+            } else {
+                field.get(obj)
+            }
+        } else {
+            if (expr.value != null) {
+                // setter
+                evaluate(expr.value).run {
+                    val name = "set" + expr.field.value.toString().capitalize()
+                    val setter = findExecutable(obj.javaClass.declaredMethods, listOf(this)) { method -> method.name == name }
+                            ?: throw LurryInterpretationException("Method '${name}' not found exception", expr.line, expr.position)
+                    setter.invoke(obj, this)
+                }
+            } else {
+                // getter
+                val name = "get" + expr.field.value.toString().capitalize()
+                val getter = obj.javaClass.declaredMethods.find { method -> method.name == name }
+                        ?: throw LurryInterpretationException("Method '${name}' not found exception", expr.line, expr.position)
+                getter.invoke(obj)
+            }
+        }
     }
 
     override fun <R> createMapper(call: (Map<String, Any?>) -> R) = InterpretationMapper(call)
@@ -421,7 +454,13 @@ object ExpressionPrinter : ExpressionVisitor<String>() {
             "call ${print(expr.call)} (${expr.arguments.joinToString(", ") { arg -> print(arg) }})"
 
     override fun visitMethodCallExpression(expr: MethodCallExpression): String =
-            "${print(expr.obj)}.${expr.method.value}(${expr.arguments.joinToString(", ") { arg -> print(arg) }})"
+            "${print(expr.obj)}.${expr.method.stringValue()}(${expr.arguments.joinToString(", ") { arg -> print(arg) }})"
+
+    override fun visitFieldCallExpression(expr: FieldCallExpression): String = if (expr.value != null) {
+        parenthesize("set", expr.obj, expr.field, expr.value)
+    } else {
+        parenthesize("get", expr.obj, expr.field)
+    }
 
     override fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R = block()
     override fun <R> createMapper(call: (Map<String, Any?>) -> R) = EmptyMapper(call)
