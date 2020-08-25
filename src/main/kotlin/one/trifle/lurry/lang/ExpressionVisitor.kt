@@ -15,13 +15,10 @@
  */
 package one.trifle.lurry.lang
 
-import java.lang.reflect.Executable
-import java.lang.reflect.Modifier
+import one.trifle.lurry.lang.interpreter.LClass
+import one.trifle.lurry.lang.interpreter.LFunction
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.sql.ResultSet
-import java.sql.ResultSetMetaData
-import java.sql.Types
 import kotlin.reflect.jvm.jvmName
 
 sealed class ExpressionVisitor<T> {
@@ -37,16 +34,6 @@ sealed class ExpressionVisitor<T> {
     abstract fun visitMethodCallExpression(expr: MethodCallExpression): T
     abstract fun visitFieldCallExpression(expr: FieldCallExpression): T
     abstract fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R
-    abstract fun <R> createMapper(call: (Map<String, Any?>) -> R): LurryMapper<R>
-    abstract fun <R> createFunction(params: List<Token>, call: (Map<String, Any?>) -> R): LurryFunction<R>
-
-    interface LurryMapper<R> {
-        fun call(arg: ResultSet): R
-    }
-
-    interface LurryFunction<R> {
-        fun call(vararg args: Any?): R
-    }
 }
 
 class ExpressionInterpreter : ExpressionVisitor<Any?>() {
@@ -166,9 +153,8 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
         val function = evaluate(expr.call)
         val arguments = expr.arguments.map { arg -> evaluate(arg) }
         return when (function) {
-            is LurryFunction<*> -> function.call(*arguments.toTypedArray())
-            is Class<*> -> findExecutable(function.constructors, arguments)?.newInstance(*arguments.toTypedArray())
-                    ?: throw LurryInterpretationException("Constructor not found exception", expr.line, expr.position)
+            is LFunction -> function.call(*arguments.toTypedArray())
+            is LClass -> function.newInstance(arguments, LurryInterpretationException("Constructor not found exception", expr.line, expr.position))
             else -> throw LurryInterpretationException("Can only call functions or constructors", expr.line, expr.position)
         }
     }
@@ -176,13 +162,10 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
     override fun visitMethodCallExpression(expr: MethodCallExpression): Any? {
         // todo cache
         val args = expr.arguments.map { arg -> evaluate(arg) }
-        var obj = evaluate(expr.obj)
+        val obj = evaluate(expr.obj)
                 ?: throw LurryInterpretationException("Null pointer exception", expr.line, expr.position)
-        val clazz = if (obj is Class<*>) obj else obj.javaClass
-        val method = findExecutable(clazz.declaredMethods, args) { method -> method.name == expr.method.value }
-                ?: throw LurryInterpretationException("Method ${expr.method.value} not found exception", expr.line, expr.position)
-        if (!method.isAccessible && Modifier.isPublic(method.modifiers)) method.isAccessible = true
-        return method.invoke(if (obj is Class<*>) null else obj, *args.toTypedArray())
+        val clazz = if (obj is LClass) obj else LClass(obj.javaClass, obj)
+        return clazz.invoke(expr.method.value.toString(), args, LurryInterpretationException("Method ${expr.method.value} not found exception", expr.line, expr.position))
     }
 
     override fun visitFieldCallExpression(expr: FieldCallExpression): Any? {
@@ -202,22 +185,17 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 // setter
                 evaluate(expr.value).run {
                     val name = "set" + expr.field.value.toString().capitalize()
-                    val setter = findExecutable(obj.javaClass.declaredMethods, listOf(this)) { method -> method.name == name }
-                            ?: throw LurryInterpretationException("Method '${name}' not found exception", expr.line, expr.position)
-                    setter.invoke(obj, this)
+                    LClass(obj.javaClass, obj).invoke(name, listOf(this),
+                            LurryInterpretationException("Method '${name}' not found exception", expr.line, expr.position))
                 }
             } else {
                 // getter
                 val name = "get" + expr.field.value.toString().capitalize()
-                val getter = obj.javaClass.declaredMethods.find { method -> method.name == name }
-                        ?: throw LurryInterpretationException("Method '${name}' not found exception", expr.line, expr.position)
-                getter.invoke(obj)
+                LClass(obj.javaClass, obj).invoke(name, listOf(),
+                        LurryInterpretationException("Method '${name}' not found exception", expr.line, expr.position))
             }
         }
     }
-
-    override fun <R> createMapper(call: (Map<String, Any?>) -> R) = InterpretationMapper(call)
-    override fun <R> createFunction(params: List<Token>, call: (Map<String, Any?>) -> R) = InterpretationFunction(params, call)
 
     class Environment(private val enclosing: Environment? = null) {
         private val variables: MutableMap<String, Any?> = HashMap()
@@ -248,88 +226,6 @@ class ExpressionInterpreter : ExpressionVisitor<Any?>() {
                 environment = environment.enclosing
             }
             throw LurryInterpretationException("Undefined variable '${name}'", expr.name.line, expr.name.position)
-        }
-    }
-
-    class InterpretationFunction<R>(private val params: List<Token>, private val body: (Map<String, Any?>) -> R) : LurryFunction<R> {
-        override fun call(vararg args: Any?): R {
-            val vars = if (params.isEmpty()) {
-                mapOf()
-            } else {
-                (params.indices).map { i -> params[i].value.toString() to args[i] }.toMap()
-            }
-            return body(vars)
-        }
-    }
-
-    class InterpretationMapper<R>(private val body: (Map<String, Any?>) -> R) : LurryMapper<R> {
-        override fun call(arg: ResultSet): R {
-            val row: MutableMap<String, Any?> = HashMap()
-            val metadata: ResultSetMetaData = arg.metaData
-            (1..metadata.columnCount).forEach { index ->
-                val name: String = metadata.getColumnName(index)
-                val value: Any? = when (metadata.getColumnType(index)) {
-                    Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR -> arg.getString(index)
-                    Types.NUMERIC, Types.DECIMAL -> arg.getBigDecimal(index)
-                    Types.BIT -> arg.getBoolean(index)
-                    Types.TINYINT -> arg.getByte(index)
-                    Types.SMALLINT -> arg.getShort(index)
-                    Types.BIGINT -> arg.getLong(index)
-                    Types.REAL, Types.FLOAT -> arg.getFloat(index)
-                    Types.DOUBLE -> arg.getDouble(index)
-                    Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> arg.getBytes(index)
-                    Types.DATE -> arg.getDate(index)
-                    Types.TIME -> arg.getTime(index)
-                    Types.TIMESTAMP -> arg.getTimestamp(index)
-                    Types.ARRAY -> arg.getArray(index)
-                    Types.BLOB -> arg.getBlob(index)
-                    Types.NULL -> null
-                    else -> arg.getString(index)
-                }
-                row["#${name}"] = value
-            }
-            return body(row)
-        }
-    }
-
-    private fun <T : Executable> findExecutable(executables: Array<T>, arguments: List<Any?>, condition: (T) -> Boolean = { true }): T? {
-        val getPrimitive: (Class<*>) -> Class<*> = { clazz: Class<*> ->
-            if (clazz.isPrimitive) {
-                clazz
-            } else {
-                val field = clazz.declaredFields.find { field -> field.name == "TYPE" }
-                if (field == null || !Modifier.isPublic(field.modifiers) || !Modifier.isStatic(field.modifiers)) {
-                    clazz
-                } else {
-                    field.get(null).let { c ->
-                        if (c is Class<*>) {
-                            c
-                        } else {
-                            clazz
-                        }
-                    }
-                }
-            }
-        }
-        val isAssignableFrom: (Class<*>, Class<*>) -> Boolean = { c1: Class<*>, c2: Class<*> ->
-            var class1 = c1
-            var class2 = c2
-            if (class1.isPrimitive || class2.isPrimitive) {
-                class1 = getPrimitive(c1)
-                class2 = getPrimitive(c2)
-            }
-            class1 == class2 || class1.isAssignableFrom(class2)
-        }
-
-        return executables.filter(condition).find { exec ->
-            if (exec.parameters.size != arguments.size) return@find false
-            arguments.asSequence().map { arg -> arg?.javaClass }
-                    .forEachIndexed { index, arg ->
-                        if (arg != null && !isAssignableFrom(exec.parameters[index].type, arg)) {
-                            return@find false
-                        }
-                    }
-            return@find true
         }
     }
 
@@ -462,14 +358,4 @@ object ExpressionPrinter : ExpressionVisitor<String>() {
     }
 
     override fun <R> visitBlock(env: Map<String, Any?>, block: () -> R): R = block()
-    override fun <R> createMapper(call: (Map<String, Any?>) -> R) = EmptyMapper(call)
-    override fun <R> createFunction(params: List<Token>, call: (Map<String, Any?>) -> R) = EmptyFunction(call)
-
-    class EmptyMapper<R>(private val body: (Map<String, Any?>) -> R) : LurryMapper<R> {
-        override fun call(arg: ResultSet): R = body(mapOf())
-    }
-
-    class EmptyFunction<R>(private val body: (Map<String, Any?>) -> R) : LurryFunction<R> {
-        override fun call(vararg args: Any?): R = body(mapOf())
-    }
 }

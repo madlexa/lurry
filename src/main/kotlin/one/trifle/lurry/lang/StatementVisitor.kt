@@ -15,6 +15,10 @@
  */
 package one.trifle.lurry.lang
 
+import one.trifle.lurry.lang.interpreter.LClass
+import one.trifle.lurry.lang.interpreter.LFunction
+import one.trifle.lurry.lang.interpreter.LMapper
+
 sealed class StatementVisitor<T>(val visitor: ExpressionVisitor<T>) {
     abstract fun visitExpressionStatement(stmt: ExpressionStatement): T
     abstract fun visitVarStatement(stmt: VarStatement): T
@@ -65,7 +69,7 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
     }
 
     override fun visitMapperStatement(stmt: MapperStatement) {
-        visitor.define(stmt.name.value.toString(), visitor.createMapper { args ->
+        visitor.define(stmt.name.value.toString(), LMapper { args ->
             val result = visitBlockStatement(stmt.body, args)
             if (result is ReturnValue) result.value
             else result
@@ -73,7 +77,7 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
     }
 
     override fun visitFunctionStatement(stmt: FunctionStatement) {
-        visitor.define(stmt.name.value.toString(), visitor.createFunction(stmt.params) { args ->
+        visitor.define(stmt.name.value.toString(), LFunction(stmt.params) { args ->
             val result = visitBlockStatement(stmt.body, args)
             if (result is ReturnValue) result.value
             else result
@@ -90,7 +94,7 @@ class StatementInterpreter(visitor: ExpressionInterpreter) : StatementVisitor<An
     }
 
     override fun visitImportStatement(stmt: ImportStatement) {
-        visitor.define(stmt.name, Class.forName(stmt.path))
+        visitor.define(stmt.name, LClass(Class.forName(stmt.path)))
     }
 
     private fun execute(stmt: Statement): Any? = stmt.accept(this)
