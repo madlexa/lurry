@@ -16,7 +16,7 @@
 
 package one.trifle.lurry.testModel;
 
-public class Person {
+public class MyObject {
     public int age;
     private String name;
 

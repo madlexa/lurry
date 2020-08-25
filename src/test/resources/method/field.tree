@@ -1,4 +1,4 @@
-import one.trifle.lurry.testModel.Person as Person
+import one.trifle.lurry.testModel.MyObject as Person
 (block
 var billy = call Person ()
 (set billy name Billy)

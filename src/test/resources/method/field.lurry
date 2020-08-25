@@ -1,4 +1,4 @@
-import one.trifle.lurry.testModel.Person
+import one.trifle.lurry.testModel.MyObject as Person
 
 {
     var billy = Person()
