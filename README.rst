@@ -42,7 +42,7 @@ This project is licensed under [Apache License, version 2.0](https://www.apache.
 Pull requests are welcome.
 
 .. |teamcity_ci| image:: https://trifle.beta.teamcity.com/app/rest/builds/buildType:(id:Lurry_Test)/statusIcon
-   :target: https://trifle.beta.teamcity.com/viewType.html?buildTypeId=Lurry_Test&guest=1
+   :target: https://trifle.beta.teamcity.com/viewLog.html?buildId=lastSuccessful&buildTypeId=Lurry_Test&guest=1
    :alt: TeamCity build
 .. |travis_ci| image:: https://travis-ci.org/madlexa/lurry.png?branch=master
    :target: https://travis-ci.org/madlexa/lurry
