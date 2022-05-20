@@ -68,7 +68,7 @@
         <samba.reader.version>1.3.17</samba.reader.version>
 
         <!--PARSER-->
-        <json.parser.version>2.8.6</json.parser.version>
+        <json.parser.version>2.8.9</json.parser.version>
         <yaml.parser.version>1.26</yaml.parser.version>
         <xml.parser.version>1.2.0</xml.parser.version>
 
