@@ -59,7 +59,7 @@
 
         <!--LOGIC-->
         <java.version>1.6</java.version>
-        <kotlin.version>1.4.0</kotlin.version>
+        <kotlin.version>1.6.0</kotlin.version>
 
         <!--LOGGER-->
         <logger.version>1.7.30</logger.version>
